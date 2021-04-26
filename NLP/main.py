@@ -2,9 +2,9 @@ from pprint import pprint
 from Questgen import main
 import pickle
 
-f = open("payload.txt")
-line = f.read().replace("\n", " ")
-f.close()
+# f = open("payload.txt")
+# line = f.read().replace("\n", " ")
+# f.close()
 
 
 # Based on https://levelup.gitconnected.com/two-simple-ways-to-scrape-text-from-wikipedia-in-python-9ce07426579b
@@ -31,8 +31,7 @@ for subject in subjects:
     print(text)
 
     # qe= main.BoolQGen()
-    payload = { "input_text": line }
-
+    payload = { "input_text": text }
 
     # FAQ Questions
     print('FAQ')
