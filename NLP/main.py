@@ -2,14 +2,15 @@ from pprint import pprint
 from Questgen import main
 import pickle
 import pandas as pd
+import re# Clean text
 
 column_names = ["question", "answer"]
 df = pd.DataFrame(columns = column_names)
 
-# f = open("payload.txt")
-# line = f.read().replace("\n", " ")
-# f.close()
 
+
+from urllib.request import urlopen
+from bs4 import BeautifulSoup# Specify url of the web page
 
 # Based on https://levelup.gitconnected.com/two-simple-ways-to-scrape-text-from-wikipedia-in-python-9ce07426579b
 # https://towardsdatascience.com/questgen-an-open-source-nlp-library-for-question-generation-algorithms-1e18067fcdc6
@@ -27,33 +28,44 @@ loading = False
 
 myDict = {}
 
-for subject in subjects:
+for link in subjects:
+    source = urlopen(link).read()# Make a soup 
+    soup = BeautifulSoup(source,'lxml')
 
-    text = wikipedia.summary(subject, sentences=10) # Extract the plain text content of the page
-
-    # Import package
-    import re   # Clean text
-    text = re.sub(r'==.*?==+', '', text)
-    text = text.replace('\n', '')
-    print(text)
-
-    # qe= main.BoolQGen()
-    payload = { "input_text": text }
-
-    # FAQ Questions
-    print('FAQ')
-
-    if loading:
-        output = pickle.load(open("output.pickle", "rb" ))
-
-    else:
-        qg = main.QGen()
-        output = qg.predict_shortq(payload)
-        pprint(output)
-        with open('output.pickle', 'wb') as f:
-            pickle.dump(output, f)
+    # Extract the plain text content from paragraphs
+    text = ''
+    for paragraph in soup.find_all('p'):
+        text += paragraph.text
         
-    print('nicely formatted')
+    # Import package
+    text = re.sub(r'\[.*?\]+', '', text)
+    text = text.replace('\n', '')
+    
+    text1 = text.split()[0:500]
+    text2 = text.split()[500:1000]
+
+    text1 = ' '.join([str(elem) for elem in text1])
+    text2 = ' '.join([str(elem) for elem in text2])
+
+    # print(text)
+
+    payload = { "input_text": text1 }
+
+    qg = main.QGen()
+    output = qg.predict_shortq(payload)
+    pprint(output)
+            
+    for item in output['questions']:
+        # print(item)
+        print(item['Question'], item['Answer'])
+        new_line = {'question': item['Question'], 'answer': item['Answer']}
+        df = df.append(new_line, ignore_index=True)
+
+    payload = { "input_text": text2 }
+
+    output = qg.predict_shortq(payload)
+    pprint(output)
+            
     for item in output['questions']:
         # print(item)
         print(item['Question'], item['Answer'])

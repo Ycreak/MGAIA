@@ -1,0 +1,9 @@
+Rate questions on difficulty
+	Sea of Thieves topic questions must not contain "Sea of Thieves"
+	Check answers and their proximity -> Do we allow "Dell" as the answer for the page "Michael Dell"
+	Generate questions on the fly given a specific topic
+		If this topic needs to be generated automatically, write code to do this
+
+	Allow dialog in Pygame
+	Allow keeping score in pygame
+	Write game over procedures
