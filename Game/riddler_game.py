@@ -4,6 +4,11 @@ from pygame.locals import *
 import pandas as pd
 import random
 
+# TODO add guess the answer quiz
+# TODO add question button
+# TODO check answer
+# TODO handler when there are no more questions
+
 
 class App:
     def __init__(self):
@@ -11,7 +16,7 @@ class App:
         self.display_surf = None
         self.size = self.width, self.height = 1000, 700
         self.colors = {"bg_color": (60, 25, 60), "color_light": (
-            170, 170, 170), "color_dark": (100, 100, 100), "buttontext": (255, 255, 255), "questiontext": (0, 0, 0), "answertext": (60, 25, 60), "qabox": (255, 255, 255)}
+            170, 170, 170), "color_dark": (100, 100, 100), "buttontext": (255, 255, 255), "questiontext": (0, 0, 0), "answertext": (60, 25, 60), "qabox": (255, 255, 255), "inputactive": pygame.Color('dodgerblue2'), "inputinactive": pygame.Color('lightskyblue3')}
         # x_left, x_right, y_top, y_bottom, width, height
         self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]], "questions": [
             [5, self.width-5], [55, 85], [self.width-10, 30]]}
@@ -20,11 +25,9 @@ class App:
     def on_init(self):
         pygame.init()
         self.clock = pygame.time.Clock()
-        COLOR_INACTIVE = pygame.Color('lightskyblue3')
-        COLOR_ACTIVE = pygame.Color('dodgerblue2')
-        FONT = pygame.font.Font(None, 32)
+        input_font = pygame.font.Font(None, 32)
         input_box1 = InputBox(
-            10, 600, 140, 32, COLOR_INACTIVE, COLOR_ACTIVE, FONT)
+            10, self.height-10-32, 500, 32, self.colors["inputinactive"], self.colors["inputactive"], input_font)
         #input_box2 = InputBox(100, 300, 140, 32, COLOR_INACTIVE, COLOR_ACTIVE, FONT)
         self.input_boxes = [input_box1]
 
@@ -63,7 +66,7 @@ class App:
 
         v_fill = 10
 
-        for question, answer in self.questions_answers_displayed:
+        for question, answer, _ in self.questions_answers_displayed:
             text = "--".join([question, answer])
             q = self.questionfont.render(
                 question, True, self.colors["questiontext"])
@@ -86,7 +89,8 @@ class App:
         if len(self.questions_answers_database.index) == 0:
             pass
         else:
-            idx = random.randint(0, len(self.questions_answers_database.index))
+            idx = random.randint(
+                0, len(self.questions_answers_database.index)-1)
             self.questions_answers_displayed.append(
                 self.questions_answers_database.loc[idx].tolist())
             self.questions_answers_database.drop([idx])
@@ -151,7 +155,12 @@ class InputBox():
 
     def __init__(self, x, y, w, h, COLOR_INACTIVE, COLOR_ACTIVE, FONT, text=''):
         self.rect = pygame.Rect(x, y, w, h)
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
         self.color = COLOR_INACTIVE
+        self.bg_color = (100, 100, 100)
         self.inactivecolor = COLOR_INACTIVE
         self.activecolor = COLOR_ACTIVE
         self.font = FONT
@@ -184,14 +193,17 @@ class InputBox():
 
     def update(self):
         # Resize the box if the text is too long.
-        width = max(200, self.txt_surface.get_width()+10)
+        width = max(self.w, self.txt_surface.get_width()+10)
         self.rect.w = width
 
     def draw(self, screen):
-        # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        pygame.draw.rect(screen, self.bg_color, self.rect)
+
         # Blit the rect.
         pygame.draw.rect(screen, self.color, self.rect, 2)
+
+        # Blit the text.
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
 
 # HEADER
 
