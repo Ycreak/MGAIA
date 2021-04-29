@@ -14,12 +14,16 @@ class App:
     def __init__(self):
         self._running = True
         self.display_surf = None
+
+        self.menupage = False
+        self.gamepage = True
+
         self.size = self.width, self.height = 1000, 700
         self.colors = {"bg_color": (60, 25, 60), "color_light": (
             170, 170, 170), "color_dark": (100, 100, 100), "buttontext": (255, 255, 255), "questiontext": (0, 0, 0), "answertext": (60, 25, 60), "qabox": (255, 255, 255), "inputactive": pygame.Color('dodgerblue2'), "inputinactive": pygame.Color('lightskyblue3')}
         # x_left, x_right, y_top, y_bottom, width, height
         self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]], "questions": [
-            [5, self.width-5], [55, 85], [self.width-10, 30]]}
+            [5, self.width-5], [55, 85], [self.width-10, 30]], "menu_button": [[150, 150+140], [5, 45], [140, 40]], "play_button": [[self.width/2, self.width/2+140], [self.height/2, self.height/2+40], [140, 40]]}
         self.csv_name = '../NLP/dataframe.csv'
 
     def on_init(self):
@@ -112,19 +116,40 @@ class App:
             button_text, (position_list[0][0]+text_offset[0], position_list[1][0]+text_offset[1]))
 
     def on_render(self):
-        self.display_surf.fill(self.colors["bg_color"])
-        # quit button
-        self.render_button(self.positions["quit_button"], "EXIT", self.smallfont, self.colors["buttontext"], [45, 5],
-                           self.colors["color_light"], self.colors["color_dark"])
+        if self.gamepage:
+            # TITLE
+            self.display_surf.fill(self.colors["bg_color"])
+            title = self.smallfont.render(
+                "GUESS THE SUBJECT", True, self.colors["buttontext"])
+            title_rectangle = title.get_rect(center=(self.width/2, 20))
+            self.display_surf.blit(title, title_rectangle)
 
-        title = self.smallfont.render(
-            "GUESS THE SUBJECT", True, self.colors["buttontext"])
-        title_rectangle = title.get_rect(center=(self.width/2, 20))
-        self.display_surf.blit(title, title_rectangle)
+            # BUTTONS
+            # quit button
+            self.render_button(self.positions["quit_button"], "EXIT", self.smallfont, self.colors["buttontext"], [40, 0],
+                               self.colors["color_light"], self.colors["color_dark"])
+            # button menu
+            self.render_button(self.positions["menu_button"], "MENU", self.smallfont,
+                               self.colors["buttontext"], [25, 0], self.colors["color_light"], self.colors["color_dark"])
 
-        self.render_questions(self.positions["questions"])
-        for box in self.input_boxes:
-            box.draw(self.display_surf)
+            #### Q & A
+            self.render_questions(self.positions["questions"])
+
+            # INPUT BOX
+            for box in self.input_boxes:
+                box.draw(self.display_surf)
+        if self.menupage:
+
+            self.display_surf.fill(self.colors["bg_color"])
+
+            # BUTTONS
+            # exit button
+            self.render_button(self.positions["quit_button"], "EXIT", self.smallfont, self.colors["buttontext"], [40, 0],
+                               self.colors["color_light"], self.colors["color_dark"])
+            # button speel game
+            self.render_button(self.positions["play_button"], "PLAY GAME!", self.smallfont,
+                               self.colors["buttontext"], [25, 0], self.colors["color_light"], self.colors["color_dark"])
+        # update display
         pygame.display.update()
 
     def on_cleanup(self):
