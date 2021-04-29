@@ -10,6 +10,11 @@ class App:
         self.colors = {"color_light": (
             170, 170, 170), "color_dark": (100, 100, 100)}
         self.smallfont = pygame.font.SysFont('Corbel', 35)
+        self.user_text = ''
+        self.color_active =  pygame.Color('lightskyblue3') 
+        self.color_passive = pygame.Color('chartreuse4')
+        self.color = color_passive
+        self.active = False
         self.mouse = pygame.mouse.get_pos()
         # x_left, x_right, y_top, y_bottom, width, height
         self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]]}
@@ -74,6 +79,40 @@ class App:
         while(self._running):
             for event in pygame.event.get():
                 self.on_event(event)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if input_rect.collidepoint(event.pos):
+                        active = True
+                    else:
+                        active = False
+                if event.type == pygame.KEYDOWN:
+                    # Check for backspace
+                    if event.key == pygame.K_BACKSPACE:
+                        # get text input from 0 to -1 i.e. end.
+                        user_text = user_text[:-1]
+ 
+                    # Unicode standard is used for string
+                    # formation
+                    else:
+                        user_text += event.unicode
+                if active:
+                    color = color_active
+                else:
+                    color = color_passive
+                # draw rectangle and argument passed which should
+                # be on screen
+                pygame.draw.rect(self.display_surf, color, input_rect)
+                text_surface = base_font.render(user_text, True, (255, 255, 255))
+                # render at position stated in arguments
+                screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
+      
+                # set width of textfield so that text cannot get
+                # outside of user's text input
+                input_rect.w = max(100, text_surface.get_width()+10)
+      
+                # display.flip() will update only a portion of the
+                # screen to updated, not full area
+                pygame.display.flip()     
+               
             self.mouse = pygame.mouse.get_pos()
             self.on_loop()
             self.on_render()
