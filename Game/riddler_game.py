@@ -1,13 +1,11 @@
 import pygame
 from pygame.locals import *
-
+from inputbox import InputBox
 import pandas as pd
 import random
 
-# TODO add guess the answer quiz
-# TODO add question button
-# TODO check answer
-# TODO handler when there are no more questions
+# TODO check answer (rem)
+# TODO add give up button
 
 
 class App:
@@ -19,20 +17,38 @@ class App:
         self.gamepage = True
 
         self.size = self.width, self.height = 1000, 700
-        self.colors = {"bg_color": (60, 25, 60), "color_light": (
-            170, 170, 170), "color_dark": (100, 100, 100), "buttontext": (255, 255, 255), "questiontext": (0, 0, 0), "answertext": (60, 25, 60), "qabox": (255, 255, 255), "inputactive": pygame.Color('dodgerblue2'), "inputinactive": pygame.Color('lightskyblue3')}
+        self.colors = {"bg_color": (60, 25, 60),
+                       "color_light": (170, 170, 170),
+                       "color_dark": (100, 100, 100),
+                       "buttontext": (255, 255, 255),
+                       "questiontext": (0, 0, 0),
+                       "answertext": (60, 25, 60),
+                       "qabox": (255, 255, 255),
+                       "warningtext": (255, 255, 255),
+                       "warningbox": (179, 58, 58),
+                       "victorytext": (255, 255, 255),
+                       "victorybox": (0, 183, 0),
+                       "inputactive": pygame.Color('dodgerblue2'),
+                       "inputinactive": pygame.Color('lightskyblue3')}
         # x_left, x_right, y_top, y_bottom, width, height
-        self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]], "questions": [
-            [5, self.width-5], [55, 85], [self.width-10, 30]], "menu_button": [[150, 150+140], [5, 45], [140, 40]], "play_button": [[self.width/2, self.width/2+140], [self.height/2, self.height/2+40], [140, 40]]}
+        self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]],
+                          "questions": [[5, self.width-5], [55, 85], [self.width-10, 30]],
+                          "menu_button": [[150, 150+140], [5, 45], [140, 40]],
+                          "play_button": [[self.width/2, self.width/2+200], [self.height/2, self.height/2+40], [200, 40]],
+                          "input_box": [[self.width-510, self.width-10], [self.height-10-32, self.height-10], [500, 32]],
+                          "question_button": [[10, 410], [self.height-20-32-50, self.height-20-32], [400, 50]]}
+
         self.csv_name = '../NLP/dataframe.csv'
+        self.game_answer = "Michael Collins"
 
     def on_init(self):
         pygame.init()
         self.clock = pygame.time.Clock()
         input_font = pygame.font.Font(None, 32)
-        input_box1 = InputBox(
-            10, self.height-10-32, 500, 32, self.colors["inputinactive"], self.colors["inputactive"], input_font)
-        #input_box2 = InputBox(100, 300, 140, 32, COLOR_INACTIVE, COLOR_ACTIVE, FONT)
+        input_box1 = InputBox(self.positions["input_box"],
+                              self.colors["inputinactive"],
+                              self.colors["inputactive"],
+                              input_font)
         self.input_boxes = [input_box1]
 
         self.smallfont = pygame.font.SysFont('Corbel', 35)
@@ -40,11 +56,16 @@ class App:
             self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self.smallfont = pygame.font.SysFont('Corbel', 35)
         self.questionfont = pygame.font.SysFont('Corbel', 25)
+        self.bigfont = pygame.font.SysFont('Corbel', 70)
+
         self.mouse = pygame.mouse.get_pos()
+
+        self.no_more_questions = False
         self.questions_answers_database = pd.read_csv(self.csv_name, sep=',')
         self.questions_answers_displayed = []
         self.add_question()
-        self.add_question()
+
+        self.player_won = False
         self._running = True
         return True
 
@@ -55,13 +76,34 @@ class App:
 
         # quit button
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.positions["quit_button"][0][0] <= self.mouse[0] <= self.positions["quit_button"][0][1] and self.positions["quit_button"][1][0] <= self.mouse[1] <= self.positions["quit_button"][1][1]:
+            if self.positions["quit_button"][0][0] <= self.mouse[0] <= self.positions["quit_button"][0][1] and\
+                    self.positions["quit_button"][1][0] <= self.mouse[1] <= self.positions["quit_button"][1][1]:
                 self._running = False
                 pygame.quit()
+            if self.positions["question_button"][0][0] <= self.mouse[0] <= self.positions["question_button"][0][1] and\
+                    self.positions["question_button"][1][0] <= self.mouse[1] <= self.positions["question_button"][1][1]:
+                self.add_question()
+                # self.render_question()
+                self.on_render()
+            if self.positions["menu_button"][0][0] <= self.mouse[0] <= self.positions["menu_button"][0][1] \
+                    and self.positions["menu_button"][1][0] <= self.mouse[1] <= self.positions["menu_button"][1][1]:
+                print('inside menu')
+                self.gamepage = False
+                self.menupage = True
+                self.on_render()
+            # play button
+            if self.positions["play_button"][0][0] <= self.mouse[0] <= self.positions["play_button"][0][1] and\
+                    self.positions["play_button"][1][0] <= self.mouse[1] <= self.positions["play_button"][1][1]:
+                self.gamepage = True
+                self.menupage = False
+                self.on_render()
 
     def on_loop(self):
         pass
 
+    ####################################
+    # PRINTING & HANDLING OF QUESTIONS #
+    ####################################
     def render_questions(self, top_position):
         top_x = top_position[0][0]
         top_y = top_position[1][0]
@@ -87,18 +129,55 @@ class App:
 
             top_y += v_fill + box_height
 
+    def no_more_questions_handler(self):
+        warning = self.bigfont.render(
+            "NO MORE QUESTIONS LEFT", True, self.colors["warningtext"])
+        warning_rectangle = warning.get_rect()
+        warning_rectangle.width = 800
+        warning_rectangle.height = 200
+        warning_rectangle.center = (self.width/2, self.height/2)
+        warning_border = pygame.Rect(0, 0, 750, 150)
+        warning_border.center = warning_rectangle.center
+        pygame.draw.rect(self.display_surf,
+                         self.colors["warningbox"], warning_rectangle)
+        pygame.draw.rect(self.display_surf,
+                         self.colors["warningtext"], warning_border, 4)
+        self.display_surf.blit(warning, warning.get_rect(
+            center=(self.width/2, self.height/2)))
+
     def add_question(self):
         # check how many questions there are
-        # if all questions displayed, give option to quit if you don't know the answer
         if len(self.questions_answers_database.index) == 0:
-            pass
+            self.no_more_questions = True
+            return
         else:
             idx = random.randint(
                 0, len(self.questions_answers_database.index)-1)
             self.questions_answers_displayed.append(
-                self.questions_answers_database.loc[idx].tolist())
-            self.questions_answers_database.drop([idx])
-        pass
+                self.questions_answers_database.iloc[idx].tolist())
+            self.questions_answers_database.drop(
+                [self.questions_answers_database.index[idx]], inplace=True)
+
+    def player_won_handler(self):
+        text = "VICTORY: " + self.game_answer.upper()
+        victory = self.bigfont.render(
+            text, True, self.colors["victorytext"])
+        victory_rectangle = victory.get_rect()
+        victory_rectangle.width = 800
+        victory_rectangle.height = 200
+        victory_rectangle.center = (self.width/2, self.height/2)
+        victory_border = pygame.Rect(0, 0, 750, 150)
+        victory_border.center = victory_rectangle.center
+        pygame.draw.rect(self.display_surf,
+                         self.colors["victorybox"], victory_rectangle)
+        pygame.draw.rect(self.display_surf,
+                         self.colors["victorytext"], victory_border, 4)
+        self.display_surf.blit(victory, victory.get_rect(
+            center=(self.width/2, self.height/2)))
+
+    #####################
+    # GENERAL RENDERING #
+    #####################
 
     def render_button(self, position_list, text, font, textcolor, text_offset, hover_color, color):
         if position_list[0][0] <= self.mouse[0] <= position_list[0][1] \
@@ -126,29 +205,70 @@ class App:
 
             # BUTTONS
             # quit button
-            self.render_button(self.positions["quit_button"], "EXIT", self.smallfont, self.colors["buttontext"], [40, 0],
-                               self.colors["color_light"], self.colors["color_dark"])
+            self.render_button(self.positions["quit_button"],
+                               "EXIT",
+                               self.smallfont,
+                               self.colors["buttontext"],
+                               [40, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
             # button menu
-            self.render_button(self.positions["menu_button"], "MENU", self.smallfont,
-                               self.colors["buttontext"], [25, 0], self.colors["color_light"], self.colors["color_dark"])
+            self.render_button(self.positions["menu_button"],
+                               "MENU", self.smallfont,
+                               self.colors["buttontext"],
+                               [40, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+            # question button
+            self.render_button(self.positions["question_button"],
+                               "SHOW ANOTHER QUESTION",
+                               self.smallfont,
+                               self.colors["buttontext"],
+                               [30, 15],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
 
-            #### Q & A
+            # Q & A
             self.render_questions(self.positions["questions"])
 
             # INPUT BOX
+            guess = self.smallfont.render(
+                "GUESS THE SUBJECT:", True, self.colors["buttontext"])
+            guess_rectangle = guess.get_rect()
+            guess_rectangle.left = 100
+            guess_rectangle.top = self.height-10-30
+            self.display_surf.blit(guess, guess_rectangle)
             for box in self.input_boxes:
                 box.draw(self.display_surf)
+
+            # NO MORE QUESTIONS
+
+            if self.no_more_questions:
+                self.no_more_questions_handler()
+
+            # VICTORY
+            if self.player_won:
+                self.player_won_handler()
+
         if self.menupage:
 
             self.display_surf.fill(self.colors["bg_color"])
 
             # BUTTONS
             # exit button
-            self.render_button(self.positions["quit_button"], "EXIT", self.smallfont, self.colors["buttontext"], [40, 0],
-                               self.colors["color_light"], self.colors["color_dark"])
-            # button speel game
-            self.render_button(self.positions["play_button"], "PLAY GAME!", self.smallfont,
-                               self.colors["buttontext"], [25, 0], self.colors["color_light"], self.colors["color_dark"])
+            self.render_button(self.positions["quit_button"],
+                               "EXIT", self.smallfont,
+                               self.colors["buttontext"],
+                               [40, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+            # button play game
+            self.render_button(self.positions["play_button"],
+                               "PLAY GAME!", self.smallfont,
+                               self.colors["buttontext"],
+                               [25, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
         # update display
         pygame.display.update()
 
@@ -163,7 +283,9 @@ class App:
             for event in pygame.event.get():
                 self.on_event(event)
                 for box in self.input_boxes:
-                    box.handle_event(event)
+                    answer = box.handle_event(event)
+                    if answer != None and answer.lower() == self.game_answer.lower():
+                        self.player_won = True
 
             for box in self.input_boxes:
                 box.update()
@@ -175,60 +297,6 @@ class App:
             self.on_render()
         self.on_cleanup()
 
-
-class InputBox():
-
-    def __init__(self, x, y, w, h, COLOR_INACTIVE, COLOR_ACTIVE, FONT, text=''):
-        self.rect = pygame.Rect(x, y, w, h)
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-        self.color = COLOR_INACTIVE
-        self.bg_color = (100, 100, 100)
-        self.inactivecolor = COLOR_INACTIVE
-        self.activecolor = COLOR_ACTIVE
-        self.font = FONT
-        self.text = text
-        self.txt_surface = FONT.render(text, True, self.color)
-        self.active = False
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            # If the user clicked on the input_box rect.
-            if self.rect.collidepoint(event.pos):
-                # Toggle the active variable.
-                self.active = not self.active
-            else:
-                self.active = False
-            # Change the current color of the input box.
-            self.color = self.activecolor if self.active else self.inactivecolor
-        if event.type == pygame.KEYDOWN:
-            if self.active:
-                if event.key == pygame.K_RETURN:
-                    print(self.text)
-                    self.text = ''
-                elif event.key == pygame.K_BACKSPACE:
-                    self.text = self.text[:-1]
-                else:
-                    self.text += event.unicode
-                # Re-render the text.
-                self.txt_surface = self.font.render(
-                    self.text, True, self.color)
-
-    def update(self):
-        # Resize the box if the text is too long.
-        width = max(self.w, self.txt_surface.get_width()+10)
-        self.rect.w = width
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, self.bg_color, self.rect)
-
-        # Blit the rect.
-        pygame.draw.rect(screen, self.color, self.rect, 2)
-
-        # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
 
 # HEADER
 
