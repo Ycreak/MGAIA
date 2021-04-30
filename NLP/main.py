@@ -18,9 +18,10 @@ from pprint import pprint
 # Library Imports
 import pandas as pd
 import re
+import sys
 
 # Init of pandas dataframe
-column_names = ["question", "answer"]
+column_names = ["topic", "question", "answer"]
 df = pd.DataFrame(columns = column_names)
 
 # Imports to extract wikipedia pages
@@ -55,6 +56,16 @@ def Remove_stopwords(string):
     # print(filtered_sentence)
 
     return filtered_sentence 
+  
+# total arguments
+n = len(sys.argv)
+ 
+print("\nArguments passed:", end = " ")
+for i in range(1, n):
+    print(sys.argv[i], end = " ")
+
+# TODO: make a list of topics
+topic = sys.argv[1]
 
 # Config variables
 subjects_file = 'subjects.txt'
@@ -75,7 +86,7 @@ for link in subjects:
 
     words = Remove_stopwords(title)
 
-    print(words)
+    # print(words)
 
     # Extract the plain text content from paragraphs
     text = ''
@@ -104,7 +115,7 @@ for link in subjects:
     for item in output['questions']:
         # print(item)
         print(item['Question'], item['Answer'])
-        new_line = {'question': item['Question'], 'answer': item['Answer']}
+        new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
         df = df.append(new_line, ignore_index=True)
 
     payload = { "input_text": text2 }
@@ -115,7 +126,7 @@ for link in subjects:
     for item in output['questions']:
         # print(item)
         print(item['Question'], item['Answer'])
-        new_line = {'question': item['Question'], 'answer': item['Answer']}
+        new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
         df = df.append(new_line, ignore_index=True)
 
     # Now check the dataframe for proper answers
@@ -133,7 +144,7 @@ for link in subjects:
                 print(q, 'contains', word)
                 df["penalty"][i] += 1
 
-
+df = df.sort_values(by=['penalty'])
 print(df)
-df.to_csv('./dataframe.csv', index = False, header=True)
+df.to_csv('dataframe.csv', index = False, header=True)
 

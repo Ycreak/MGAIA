@@ -1,8 +1,8 @@
-question,answer,penalty
-Who was the first astronaut to fly around the moon?,michael collins,1
-When was Michael Collins born?,october,2
-What was the name of the first spacewalk that Michael Collins did?,apollo,2
-What is the name of the Air Force Academy?,air force academy,0
-What country did Collins join after World War II?,united states,1
-Who was the Chief of Staff of the US Army in 1952?,collins,0
-What did Colins begin in the T-6 Texan at Columbus Air Force Base in August 1952?,flight training,0
+topic,question,answer,penalty
+Michael Collins astronaut,What is the USAF?,united states air force,0
+Michael Collins astronaut,Who was the Chief of Staff of the US Army in 1952?,collins,0
+Michael Collins astronaut,What did Colins begin in the T-6 Texan at Columbus Air Force Base in August 1952?,flight training,0
+Michael Collins astronaut,What is the US Air Force?,usaf,0
+Michael Collins astronaut,Who was the first astronaut to fly around the moon?,michael collins,1
+Michael Collins astronaut,When was Michael Collins born?,october,2
+Michael Collins astronaut,What was the name of the first spacewalk that Michael Collins did?,apollo,2
