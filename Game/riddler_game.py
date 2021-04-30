@@ -3,11 +3,12 @@ from pygame.locals import *
 from inputbox import InputBox
 import pandas as pd
 import random
+import subprocess
 
 # TODO: check answer (rem) (also, what part should be acceptable? [string comparison])
 # TODO: add give up button
-# TODO: find wikipedia URLs from a given topic
-
+# TODO: find wikipedia URLs from a given topic (in the NLP code)
+# TODO: Input box in the menu to input a topic
 
 class App:
     def __init__(self):
@@ -36,6 +37,8 @@ class App:
                           "questions": [[5, self.width-5], [55, 85], [self.width-10, 30]],
                           "menu_button": [[150, 150+140], [5, 45], [140, 40]],
                           "play_button": [[self.width/2, self.width/2+200], [self.height/2, self.height/2+40], [200, 40]],
+                          "topic_button": [[self.width/2, self.width/2+200], [self.height/3, self.height/3+40], [200, 40]],
+
                           "input_box": [[self.width-510, self.width-10], [self.height-10-32, self.height-10], [500, 32]],
                           "question_button": [[10, 410], [self.height-20-32-50, self.height-20-32], [400, 50]],
                           "score": [[self.width-250, self.width-50], [5, 45], [140, 40]]
@@ -69,7 +72,8 @@ class App:
         self.questions_answers_displayed = []
         
         self.score = 6
-        
+        self.topic = 'Netherlands'
+
         self.add_question()
 
 
@@ -110,6 +114,19 @@ class App:
                 self.gamepage = True
                 self.menupage = False
                 self.on_render()
+            # topic button
+            if self.positions["topic_button"][0][0] <= self.mouse[0] <= self.positions["topic_button"][0][1] and\
+                    self.positions["topic_button"][1][0] <= self.mouse[1] <= self.positions["topic_button"][1][1]:
+
+                print('calling topic code')
+
+                self.topic = 'Netherlands' #TODO: needs to besomewhere else (could also be a topic list)
+
+                subprocess.call(['python', '../NLP/main.py', self.topic], cwd="../NLP/")
+                # TODO: loading process or maybe a bar? Animation?
+                print('all done!')
+                self.on_render()
+
 
     def on_loop(self):
         pass
@@ -291,6 +308,15 @@ class App:
                                [25, 10],
                                self.colors["color_light"],
                                self.colors["color_dark"])
+            # Topic button
+            self.render_button(self.positions["topic_button"],
+                    "TOPIC", self.smallfont,
+                    self.colors["buttontext"],
+                    [25, 10],
+                    self.colors["color_light"],
+                    self.colors["color_dark"])
+
+
         # update display
         pygame.display.update()
 

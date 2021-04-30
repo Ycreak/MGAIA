@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv('../NLP/dataframe.csv', sep=',')
+df = pd.read_csv('dataframe.csv', sep=',')
 
 words = ['sea', 'thieves']
 
