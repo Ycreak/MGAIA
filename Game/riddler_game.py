@@ -6,7 +6,7 @@ import random
 
 # TODO check answer (rem)
 # TODO add give up button
-
+# TODO resetting game when going to menu? 
 
 class App:
     def __init__(self):
