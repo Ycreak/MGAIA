@@ -4,12 +4,15 @@ from inputbox import InputBox
 import pandas as pd
 import random
 import subprocess
+from answer_validation import answerIsValid
 
-# TODO resetting game when going to menu? 
-# TODO: check answer (rem) (also, what part should be acceptable? [string comparison])
-# TODO: add give up button
+# TODO resetting game when going to menu?
+# TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
+# TODO: reset game when giving up?
+# TODO: give up screen - make popup width adaptable to answer? or answer in smaller font
 # TODO: find wikipedia URLs from a given topic (in the NLP code)
 # TODO: Input box in the menu to input a topic
+
 
 class App:
     def __init__(self):
@@ -37,6 +40,7 @@ class App:
         self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]],
                           "questions": [[5, self.width-5], [55, 85], [self.width-10, 30]],
                           "menu_button": [[150, 150+140], [5, 45], [140, 40]],
+                          "giveup_button": [[self.width-150, self.width-10], [self.height-20-32-40, self.height-20-32], [140, 40]],
                           "play_button": [[self.width/2, self.width/2+200], [self.height/2, self.height/2+40], [200, 40]],
                           "topic_button": [[self.width/2, self.width/2+200], [self.height/3, self.height/3+40], [200, 40]],
 
@@ -71,14 +75,14 @@ class App:
         self.questions_answers_database = pd.read_csv(self.csv_name, sep=',')
         self.game_answer = self.questions_answers_database['topic'].iloc[0]
         self.questions_answers_displayed = []
-        
+
         self.score = 6
         self.topic = 'Netherlands'
 
         self.add_question()
 
-
         self.player_won = False
+        self.given_up = False
         self._running = True
         return True
 
@@ -95,19 +99,23 @@ class App:
                 pygame.quit()
             if self.positions["question_button"][0][0] <= self.mouse[0] <= self.positions["question_button"][0][1] and\
                     self.positions["question_button"][1][0] <= self.mouse[1] <= self.positions["question_button"][1][1]:
-                
+
                 if self.score <= 0:
-                    #TODO: gameover screen should be shown here.
-                    pygame.quit()
+                    # TODO: how to handle this?
+                    pass
 
                 self.add_question()
-                # self.render_question()
                 self.on_render()
-            if self.positions["menu_button"][0][0] <= self.mouse[0] <= self.positions["menu_button"][0][1] \
-                    and self.positions["menu_button"][1][0] <= self.mouse[1] <= self.positions["menu_button"][1][1]:
+            if self.positions["menu_button"][0][0] <= self.mouse[0] <= self.positions["menu_button"][0][1] and self.positions["menu_button"][1][0] <= self.mouse[1] <= self.positions["menu_button"][1][1]:
                 print('inside menu')
                 self.gamepage = False
                 self.menupage = True
+                self.on_render()
+
+            # giveup
+            if self.positions["giveup_button"][0][0] <= self.mouse[0] <= self.positions["giveup_button"][0][1] and\
+                    self.positions["giveup_button"][1][0] <= self.mouse[1] <= self.positions["giveup_button"][1][1]:
+                self.given_up = True
                 self.on_render()
             # play button
             if self.positions["play_button"][0][0] <= self.mouse[0] <= self.positions["play_button"][0][1] and\
@@ -121,13 +129,14 @@ class App:
 
                 print('calling topic code')
 
-                self.topic = 'Netherlands' #TODO: needs to besomewhere else (could also be a topic list)
+                # TODO: needs to besomewhere else (could also be a topic list)
+                self.topic = 'Netherlands'
 
-                subprocess.call(['python', '../NLP/main.py', self.topic], cwd="../NLP/")
+                subprocess.call(
+                    ['python', '../NLP/main.py', self.topic], cwd="../NLP/")
                 # TODO: loading process or maybe a bar? Animation?
                 print('all done!')
                 self.on_render()
-
 
     def on_loop(self):
         pass
@@ -185,7 +194,7 @@ class App:
             idx = random.randint(
                 0, len(self.questions_answers_database.index)-1)
             self.questions_answers_displayed.append(
-                self.questions_answers_database.iloc[0].tolist()) # Always pick the top question
+                self.questions_answers_database.iloc[0].tolist())  # Always pick the top question
             self.questions_answers_database.drop(
                 [self.questions_answers_database.index[0]], inplace=True)
             self.score = self.score - 1
@@ -206,6 +215,26 @@ class App:
                          self.colors["victorytext"], victory_border, 4)
         self.display_surf.blit(victory, victory.get_rect(
             center=(self.width/2, self.height/2)))
+
+    def give_up_handler(self):
+        answer_1 = self.bigfont.render(
+            "YOU LOST! ANSWER WAS: ", True, self.colors["warningtext"])
+        answer_2 = self.bigfont.render(
+            self.game_answer.upper(), True, self.colors["warningtext"])
+        answer_rectangle = answer_1.get_rect()
+        answer_rectangle.width = 900
+        answer_rectangle.height = 400
+        answer_rectangle.center = (self.width/2, self.height/2)
+        answer_border = pygame.Rect(0, 0, 850, 350)
+        answer_border.center = answer_rectangle.center
+        pygame.draw.rect(self.display_surf,
+                         self.colors["warningbox"], answer_rectangle)
+        pygame.draw.rect(self.display_surf,
+                         self.colors["warningtext"], answer_border, 4)
+        self.display_surf.blit(answer_1, answer_1.get_rect(
+            center=(self.width/2, self.height/2-40)))
+        self.display_surf.blit(answer_2, answer_2.get_rect(
+            center=(self.width/2, self.height/2+40)))
 
     #####################
     # GENERAL RENDERING #
@@ -258,13 +287,21 @@ class App:
                                [40, 10],
                                self.colors["color_light"],
                                self.colors["color_dark"])
-            
+
             # question button
             self.render_button(self.positions["question_button"],
                                "SHOW ANOTHER QUESTION",
                                self.smallfont,
                                self.colors["buttontext"],
                                [30, 15],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+
+            # Give up button
+            self.render_button(self.positions["giveup_button"],
+                               "GIVE UP", self.smallfont,
+                               self.colors["buttontext"],
+                               [20, 5],
                                self.colors["color_light"],
                                self.colors["color_dark"])
 
@@ -290,6 +327,10 @@ class App:
             if self.player_won:
                 self.player_won_handler()
 
+            # GIVE UP
+            if self.given_up:
+                self.give_up_handler()
+
         if self.menupage:
 
             self.display_surf.fill(self.colors["bg_color"])
@@ -311,12 +352,11 @@ class App:
                                self.colors["color_dark"])
             # Topic button
             self.render_button(self.positions["topic_button"],
-                    "TOPIC", self.smallfont,
-                    self.colors["buttontext"],
-                    [25, 10],
-                    self.colors["color_light"],
-                    self.colors["color_dark"])
-
+                               "TOPIC", self.smallfont,
+                               self.colors["buttontext"],
+                               [25, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
 
         # update display
         pygame.display.update()
@@ -333,7 +373,7 @@ class App:
                 self.on_event(event)
                 for box in self.input_boxes:
                     answer = box.handle_event(event)
-                    if answer != None and answer.lower() == self.game_answer.lower():
+                    if answer != None and answerIsValid(answer, self.game_answer):
                         self.player_won = True
 
             for box in self.input_boxes:
