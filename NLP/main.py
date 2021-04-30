@@ -20,7 +20,7 @@ import pandas as pd
 import re
 
 # Init of pandas dataframe
-column_names = ["question", "answer"]
+column_names = ["topic", "question", "answer"]
 df = pd.DataFrame(columns = column_names)
 
 # Imports to extract wikipedia pages
@@ -104,7 +104,7 @@ for link in subjects:
     for item in output['questions']:
         # print(item)
         print(item['Question'], item['Answer'])
-        new_line = {'question': item['Question'], 'answer': item['Answer']}
+        new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
         df = df.append(new_line, ignore_index=True)
 
     payload = { "input_text": text2 }
@@ -115,7 +115,7 @@ for link in subjects:
     for item in output['questions']:
         # print(item)
         print(item['Question'], item['Answer'])
-        new_line = {'question': item['Question'], 'answer': item['Answer']}
+        new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
         df = df.append(new_line, ignore_index=True)
 
     # Now check the dataframe for proper answers
@@ -133,7 +133,7 @@ for link in subjects:
                 print(q, 'contains', word)
                 df["penalty"][i] += 1
 
-
+df = df.sort_values(by=['penalty'])
 print(df)
 df.to_csv('./dataframe.csv', index = False, header=True)
 

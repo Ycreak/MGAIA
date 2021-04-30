@@ -39,7 +39,7 @@ class App:
                           "question_button": [[10, 410], [self.height-20-32-50, self.height-20-32], [400, 50]]}
 
         self.csv_name = '../NLP/dataframe.csv'
-        self.game_answer = "Michael Collins"
+        # self.game_answer = "Michael Collins" FIXME: deprecated
 
     def on_init(self):
         pygame.init()
@@ -62,6 +62,7 @@ class App:
 
         self.no_more_questions = False
         self.questions_answers_database = pd.read_csv(self.csv_name, sep=',')
+        self.game_answer = self.questions_answers_database['topic'].iloc[0]
         self.questions_answers_displayed = []
         self.add_question()
 
@@ -112,7 +113,7 @@ class App:
 
         v_fill = 10
 
-        for question, answer, _ in self.questions_answers_displayed:
+        for topic, question, answer, penalty in self.questions_answers_displayed:
             text = "--".join([question, answer])
             q = self.questionfont.render(
                 question, True, self.colors["questiontext"])
@@ -154,9 +155,9 @@ class App:
             idx = random.randint(
                 0, len(self.questions_answers_database.index)-1)
             self.questions_answers_displayed.append(
-                self.questions_answers_database.iloc[idx].tolist())
+                self.questions_answers_database.iloc[0].tolist())
             self.questions_answers_database.drop(
-                [self.questions_answers_database.index[idx]], inplace=True)
+                [self.questions_answers_database.index[0]], inplace=True)
 
     def player_won_handler(self):
         text = "VICTORY: " + self.game_answer.upper()
