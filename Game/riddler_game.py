@@ -7,11 +7,10 @@ import subprocess
 from answer_validation import answerIsValid
 
 # TODO resetting game when going to menu?
-# TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
 # TODO: reset game when giving up?
-# TODO: give up screen - make popup width adaptable to answer? or answer in smaller font
+# TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
 # TODO: find wikipedia URLs from a given topic (in the NLP code)
-# TODO: Input box in the menu to input a topic
+# TODO: handler for topic input box (i mean what to do with the input of the textbox)
 
 
 class App:
@@ -43,6 +42,7 @@ class App:
                           "giveup_button": [[self.width-150, self.width-10], [self.height-20-32-40, self.height-20-32], [140, 40]],
                           "play_button": [[self.width/2, self.width/2+200], [self.height/2, self.height/2+40], [200, 40]],
                           "topic_button": [[self.width/2, self.width/2+200], [self.height/3, self.height/3+40], [200, 40]],
+                          "topic_input_box": [[self.width/2-440, self.width/2-40], [self.height/3, self.height/3+40], [400, 40]],
 
                           "input_box": [[self.width-510, self.width-10], [self.height-10-32, self.height-10], [500, 32]],
                           "question_button": [[10, 410], [self.height-20-32-50, self.height-20-32], [400, 50]],
@@ -55,12 +55,17 @@ class App:
     def on_init(self):
         pygame.init()
         self.clock = pygame.time.Clock()
+
         input_font = pygame.font.Font(None, 32)
-        input_box1 = InputBox(self.positions["input_box"],
-                              self.colors["inputinactive"],
-                              self.colors["inputactive"],
-                              input_font)
-        self.input_boxes = [input_box1]
+        self.answer_input_box = InputBox(self.positions["input_box"],
+                                         self.colors["inputinactive"],
+                                         self.colors["inputactive"],
+                                         input_font)
+
+        self.topic_input_box = InputBox(self.positions["topic_input_box"],
+                                        self.colors["inputinactive"],
+                                        self.colors["inputactive"],
+                                        input_font)
 
         self.smallfont = pygame.font.SysFont('Corbel', 35)
         self.display_surf = pygame.display.set_mode(
@@ -315,8 +320,7 @@ class App:
             guess_rectangle.left = 100
             guess_rectangle.top = self.height-10-30
             self.display_surf.blit(guess, guess_rectangle)
-            for box in self.input_boxes:
-                box.draw(self.display_surf)
+            self.answer_input_box.draw(self.display_surf)
 
             # NO MORE QUESTIONS
 
@@ -358,6 +362,9 @@ class App:
                                self.colors["color_light"],
                                self.colors["color_dark"])
 
+            # INPUT BOX
+            self.topic_input_box.draw(self.display_surf)
+
         # update display
         pygame.display.update()
 
@@ -371,13 +378,20 @@ class App:
         while(self._running):
             for event in pygame.event.get():
                 self.on_event(event)
-                for box in self.input_boxes:
-                    answer = box.handle_event(event)
-                    if answer != None and answerIsValid(answer, self.game_answer):
-                        self.player_won = True
 
-            for box in self.input_boxes:
-                box.update()
+                # answer input box
+                answer = self.answer_input_box.handle_event(event)
+                if answer != None and answerIsValid(answer, self.game_answer):
+                    self.player_won = True
+
+                # topic input box
+                # TODO handler for input of this box
+                topic_input = self.topic_input_box.handle_event(event)
+                if topic_input != None:
+                    print("topic input: ", topic_input)
+
+            self.answer_input_box.update()
+            self.topic_input_box.update()
 
             self.display_surf.fill((30, 30, 30))
 
