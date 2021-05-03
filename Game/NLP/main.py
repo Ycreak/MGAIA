@@ -60,9 +60,9 @@ def Remove_stopwords(string):
 # total arguments
 n = len(sys.argv)
  
-print("\nArguments passed:", end = " ")
+print("\nArguments passed:")
 for i in range(1, n):
-    print(sys.argv[i], end = " ")
+    print(sys.argv[i])
 
 # TODO: make a list of topics
 topic = sys.argv[1]

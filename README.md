@@ -1,14 +1,15 @@
 # MGAIA
+Create a virtual environment
+$ python3 -m venv env
 
-## NLP
-You need to use python2
+Activate the environment
+$ source env/bin/activate
 
-pip install git+https://github.com/ramsrigouthamg/Questgen.ai
-pip install sense2vec==1.0.2
-pip install git+https://github.com/boudinfl/pke.git
+Install the requirements
+$ pip3 install -r requirements.txt
 
-pip install nltk
+Install NLTK and Spacy
+$ python3 -m nltk.downloader universal_tagset
+$ python3 -m spacy download en
 
-python -m nltk.downloader universal_tagset
-python -m spacy download en
 

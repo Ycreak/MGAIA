@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # NLP
-NLP/s2v_old
-NLP/bak
+Game/NLP/s2v_old
+Game/NLP/bak

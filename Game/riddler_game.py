@@ -49,11 +49,12 @@ class App:
                           "score": [[self.width-250, self.width-50], [5, 45], [140, 40]]
                           }
 
-        self.csv_name = '../NLP/dataframe.csv'
+        self.csv_name = './NLP/dataframe.csv'
         # self.game_answer = "Michael Collins" FIXME: deprecated
 
     def on_init(self):
         pygame.init()
+        pygame.display.set_caption('Riddler Game')
         self.clock = pygame.time.Clock()
 
         input_font = pygame.font.Font(None, 32)
@@ -138,7 +139,7 @@ class App:
                 self.topic = 'Netherlands'
 
                 subprocess.call(
-                    ['python', '../NLP/main.py', self.topic], cwd="../NLP/")
+                    ['python3', 'main.py', self.topic], cwd="NLP/")
                 # TODO: loading process or maybe a bar? Animation?
                 print('all done!')
                 self.on_render()
@@ -269,6 +270,8 @@ class App:
             title_rectangle = title.get_rect(center=(self.width/2, 20))
             self.display_surf.blit(title, title_rectangle)
 
+
+
             # BUTTONS
             # quit button
             self.render_button(self.positions["quit_button"],
@@ -312,6 +315,11 @@ class App:
 
             # Q & A
             self.render_questions(self.positions["questions"])
+
+            temp = self.smallfont.render(
+                "GUESS THE SUBJECT", True, self.colors["buttontext"])
+            temp_rectangle = title.get_rect(center=(self.width/2, 400))
+            self.display_surf.blit(temp, temp_rectangle)
 
             # INPUT BOX
             guess = self.smallfont.render(
@@ -389,9 +397,10 @@ class App:
                 topic_input = self.topic_input_box.handle_event(event)
                 if topic_input != None:
                     print("topic input: ", topic_input)
-
+                    self.topic = topic_input
             self.answer_input_box.update()
             self.topic_input_box.update()
+
 
             self.display_surf.fill((30, 30, 30))
 
