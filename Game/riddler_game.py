@@ -4,13 +4,84 @@ from inputbox import InputBox
 import pandas as pd
 import random
 import subprocess
+import os
+import math
+
 from answer_validation import answerIsValid
+
+
 
 # TODO resetting game when going to menu?
 # TODO: reset game when giving up?
 # TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
 # TODO: find wikipedia URLs from a given topic (in the NLP code)
 # TODO: handler for topic input box (i mean what to do with the input of the textbox)
+
+class MySprite(pygame.sprite.Sprite):
+    def __init__(self):
+        super(MySprite, self).__init__()
+        #adding all the images to sprite array
+        self.images = self.load_images('img/riddler')
+        
+        # self.images.append(pygame.image.load('temp/image1.png'))
+        # self.images.append(pygame.image.load('temp/image2.png'))
+        # self.images.append(pygame.image.load('images/walk3.png'))
+        # self.images.append(pygame.image.load('images/walk4.png'))
+        # self.images.append(pygame.image.load('images/walk5.png'))
+        # self.images.append(pygame.image.load('images/walk6.png'))
+        # self.images.append(pygame.image.load('images/walk7.png'))
+        # self.images.append(pygame.image.load('images/walk8.png'))
+        # self.images.append(pygame.image.load('images/walk9.png'))
+        # self.images.append(pygame.image.load('images/walk10.png'))
+
+        #index value to get the image from the array
+        #initially it is 0 
+        self.index = 0
+
+        #now the image that we will display will be the index from the image array 
+        self.image = self.images[math.floor(self.index)]
+
+        #creating a rect at position x,y (5,5) of size (150,198) which is the size of sprite 
+        self.rect = pygame.Rect(30, 440, 10, 10)
+
+    def load_images(self, path):
+        """
+        Loads all images in directory. The directory must only contain images.
+
+        Args:
+            path: The relative or absolute path to the directory to load images from.
+
+        Returns:
+            List of images.
+        """
+        images = []
+        temp_list = []
+        for file_name in os.listdir(path):
+            temp_list.append(file_name)
+
+        temp_list = sorted(temp_list)
+        print(temp_list)
+
+        for file_name in temp_list:
+            image = pygame.image.load(path + os.sep + file_name)
+            image = pygame.transform.scale(image, (120, 150))
+            print(file_name)
+            images.append(image)
+
+
+        return images
+
+    def update(self):
+        #when the update method is called, we will increment the index
+        self.index += 0.02
+
+        #if the index is larger than the total images
+        if self.index >= len(self.images):
+            #we will make the index to 0 again
+            self.index = 0
+        
+        #finally we will update the image that will be displayed
+        self.image = self.images[math.floor(self.index)]
 
 
 class App:
@@ -50,7 +121,11 @@ class App:
                           }
 
         self.csv_name = './NLP/dataframe.csv'
-        # self.game_answer = "Michael Collins" FIXME: deprecated
+        # self.image = pygame.image.load('img/riddler.png')
+
+        self.my_sprite = MySprite()
+        self.my_group = pygame.sprite.Group(self.my_sprite)
+        # self.clock = pygame.time.Clock()
 
     def on_init(self):
         pygame.init()
@@ -242,6 +317,14 @@ class App:
         self.display_surf.blit(answer_2, answer_2.get_rect(
             center=(self.width/2, self.height/2+40)))
 
+    ######################
+    # ANIMATION HANDLING #
+    ######################
+
+
+
+
+
     #####################
     # GENERAL RENDERING #
     #####################
@@ -316,11 +399,6 @@ class App:
             # Q & A
             self.render_questions(self.positions["questions"])
 
-            temp = self.smallfont.render(
-                "GUESS THE SUBJECT", True, self.colors["buttontext"])
-            temp_rectangle = title.get_rect(center=(self.width/2, 400))
-            self.display_surf.blit(temp, temp_rectangle)
-
             # INPUT BOX
             guess = self.smallfont.render(
                 "GUESS THE SUBJECT:", True, self.colors["buttontext"])
@@ -342,6 +420,12 @@ class App:
             # GIVE UP
             if self.given_up:
                 self.give_up_handler()
+
+            # Animations
+            # self.display_surf.blit(self.image, (0, 0))
+            self.my_group.update()
+            self.my_group.draw(self.display_surf)
+
 
         if self.menupage:
 
@@ -400,7 +484,6 @@ class App:
                     self.topic = topic_input
             self.answer_input_box.update()
             self.topic_input_box.update()
-
 
             self.display_surf.fill((30, 30, 30))
 
