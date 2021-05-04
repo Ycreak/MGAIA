@@ -101,7 +101,7 @@ relevant_pages = {}
 #Get the pageviews for the linked pages
 for linked_page in linked_pages[:200]:
 
-    linked_url = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/all-agents/" + linked_page + "/monthly/20210401/20210430"
+    linked_url = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/" + linked_page + "/monthly/20210401/20210430"
 
     pageviews = requests.get(linked_url, headers={"User-Agent":"TopicBot"})
     pageviews_text = json.loads(pageviews.text)
