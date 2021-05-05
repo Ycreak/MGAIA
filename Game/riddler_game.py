@@ -23,17 +23,6 @@ class MySprite(pygame.sprite.Sprite):
         #adding all the images to sprite array
         self.images = self.load_images('img/riddler')
         
-        # self.images.append(pygame.image.load('temp/image1.png'))
-        # self.images.append(pygame.image.load('temp/image2.png'))
-        # self.images.append(pygame.image.load('images/walk3.png'))
-        # self.images.append(pygame.image.load('images/walk4.png'))
-        # self.images.append(pygame.image.load('images/walk5.png'))
-        # self.images.append(pygame.image.load('images/walk6.png'))
-        # self.images.append(pygame.image.load('images/walk7.png'))
-        # self.images.append(pygame.image.load('images/walk8.png'))
-        # self.images.append(pygame.image.load('images/walk9.png'))
-        # self.images.append(pygame.image.load('images/walk10.png'))
-
         #index value to get the image from the array
         #initially it is 0 
         self.index = 0
@@ -60,14 +49,11 @@ class MySprite(pygame.sprite.Sprite):
             temp_list.append(file_name)
 
         temp_list = sorted(temp_list)
-        print(temp_list)
 
         for file_name in temp_list:
             image = pygame.image.load(path + os.sep + file_name)
             image = pygame.transform.scale(image, (120, 150))
-            print(file_name)
             images.append(image)
-
 
         return images
 
@@ -121,11 +107,9 @@ class App:
                           }
 
         self.csv_name = './NLP/dataframe.csv'
-        # self.image = pygame.image.load('img/riddler.png')
 
         self.my_sprite = MySprite()
         self.my_group = pygame.sprite.Group(self.my_sprite)
-        # self.clock = pygame.time.Clock()
 
     def on_init(self):
         pygame.init()
@@ -422,7 +406,6 @@ class App:
                 self.give_up_handler()
 
             # Animations
-            # self.display_surf.blit(self.image, (0, 0))
             self.my_group.update()
             self.my_group.draw(self.display_surf)
 

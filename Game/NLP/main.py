@@ -67,6 +67,10 @@ for i in range(1, n):
 # TODO: make a list of topics
 topic = sys.argv[1]
 
+print(topic)
+
+exit(0)
+
 # Config variables
 subjects_file = 'subjects.txt'
 
