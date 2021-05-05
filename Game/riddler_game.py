@@ -16,6 +16,7 @@ from answer_validation import answerIsValid
 # TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
 # TODO: find wikipedia URLs from a given topic (in the NLP code)
 # TODO: handler for topic input box (i mean what to do with the input of the textbox)
+# TODO: pressing enter for topic input maybe redundant?
 
 class MySprite(pygame.sprite.Sprite):
     def __init__(self):
@@ -142,7 +143,7 @@ class App:
         self.questions_answers_displayed = []
 
         self.score = 6
-        self.topic = 'Netherlands'
+        # self.topic = 'Netherlands'
 
         self.add_question()
 
@@ -195,7 +196,7 @@ class App:
                 print('calling topic code')
 
                 # TODO: needs to besomewhere else (could also be a topic list)
-                self.topic = 'Netherlands'
+                # self.topic = 'Netherlands'
 
                 subprocess.call(
                     ['python3', 'main.py', self.topic], cwd="NLP/")
@@ -462,6 +463,7 @@ class App:
                 # topic input box
                 # TODO handler for input of this box
                 topic_input = self.topic_input_box.handle_event(event)
+                # print(topic_input)
                 if topic_input != None:
                     print("topic input: ", topic_input)
                     self.topic = topic_input

@@ -20,6 +20,9 @@ import pandas as pd
 import re
 import sys
 
+# Code import
+from get_relevant_pages import Find_Topics
+
 # Init of pandas dataframe
 column_names = ["topic", "question", "answer"]
 df = pd.DataFrame(columns = column_names)
@@ -57,17 +60,10 @@ def Remove_stopwords(string):
 
     return filtered_sentence 
   
-# total arguments
-n = len(sys.argv)
- 
-print("\nArguments passed:")
-for i in range(1, n):
-    print(sys.argv[i])
-
 # TODO: make a list of topics
 topic = sys.argv[1]
 
-print(topic)
+Find_Topics(topic)
 
 exit(0)
 

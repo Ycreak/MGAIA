@@ -12,4 +12,5 @@ Install NLTK and Spacy
 $ python3 -m nltk.downloader universal_tagset
 $ python3 -m spacy download en
 
-
+Run the game
+$ python3 riddler_game.py
