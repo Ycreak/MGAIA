@@ -6,6 +6,7 @@ import random
 import subprocess
 import os
 import math
+import wikipedia
 
 from answer_validation import answerIsValid
 
@@ -98,9 +99,21 @@ class App:
                           "questions": [[5, self.width-5], [55, 85], [self.width-10, 30]],
                           "menu_button": [[150, 150+140], [5, 45], [140, 40]],
                           "giveup_button": [[self.width-150, self.width-10], [self.height-20-32-40, self.height-20-32], [140, 40]],
-                          "play_button": [[self.width/2, self.width/2+200], [self.height/2, self.height/2+40], [200, 40]],
-                          "topic_button": [[self.width/2, self.width/2+200], [self.height/3, self.height/3+40], [200, 40]],
-                          "topic_input_box": [[self.width/2-440, self.width/2-40], [self.height/3, self.height/3+40], [400, 40]],
+                          "play_button": [[self.width-250, self.width-50], [self.height/3 - 50,  self.height/3 - 10], [200, 40]],
+                          "search_button": [[self.width-250, self.width-50], [self.height/3 - 100, self.height/3 - 60], [200, 40]],
+
+                          
+                          "topic_input_box":       [[self.width/2-440, self.width/2-240], [self.height/3 - 100, self.height/3 - 60],  [600, 40]],
+                          "topic_option_button1":  [[self.width/2-440, self.width/2-240], [self.height/3 - 50,  self.height/3 - 10],  [600, 40]],
+                          "topic_option_button2":  [[self.width/2-440, self.width/2-240], [self.height/3 - 0,   self.height/3 + 40],  [600, 40]],
+                          "topic_option_button3":  [[self.width/2-440, self.width/2-240], [self.height/3 + 50,  self.height/3 + 90],  [600, 40]],
+                          "topic_option_button4":  [[self.width/2-440, self.width/2-240], [self.height/3 + 100, self.height/3 + 140], [600, 40]],
+                          "topic_option_button5":  [[self.width/2-440, self.width/2-240], [self.height/3 + 150, self.height/3 + 190], [600, 40]],
+                          "topic_option_button6":  [[self.width/2-440, self.width/2-240], [self.height/3 + 200, self.height/3 + 240], [600, 40]],
+                          "topic_option_button7":  [[self.width/2-440, self.width/2-240], [self.height/3 + 250, self.height/3 + 290], [600, 40]],
+                          "topic_option_button8":  [[self.width/2-440, self.width/2-240], [self.height/3 + 300, self.height/3 + 340], [600, 40]],
+                          "topic_option_button9":  [[self.width/2-440, self.width/2-240], [self.height/3 + 350, self.height/3 + 390], [600, 40]],
+                          "topic_option_button10": [[self.width/2-440, self.width/2-240], [self.height/3 + 400, self.height/3 + 440], [600, 40]],
 
                           "input_box": [[self.width-510, self.width-10], [self.height-10-32, self.height-10], [500, 32]],
                           "question_button": [[10, 410], [self.height-20-32-50, self.height-20-32], [400, 50]],
@@ -111,6 +124,8 @@ class App:
 
         self.my_sprite = MySprite()
         self.my_group = pygame.sprite.Group(self.my_sprite)
+
+        self.topics = []
 
     def on_init(self):
         pygame.init()
@@ -189,9 +204,15 @@ class App:
                 self.gamepage = True
                 self.menupage = False
                 self.on_render()
-            # topic button
-            if self.positions["topic_button"][0][0] <= self.mouse[0] <= self.positions["topic_button"][0][1] and\
-                    self.positions["topic_button"][1][0] <= self.mouse[1] <= self.positions["topic_button"][1][1]:
+            # search button
+            if self.positions["search_button"][0][0] <= self.mouse[0] <= self.positions["search_button"][0][1] and\
+                    self.positions["search_button"][1][0] <= self.mouse[1] <= self.positions["search_button"][1][1]:
+                print("Search button pressed")
+                self.topics = wikipedia.search(self.topic)
+                print("Topics found: ", self.topics)
+                self.on_render()
+            if self.positions["topic_option_button1"][0][0] <= self.mouse[0] <= self.positions["topic_option_button1"][0][1] and\
+                    self.positions["topic_option_button1"][1][0] <= self.mouse[1] <= self.positions["topic_option_button1"][1][1]:
 
                 print('calling topic code')
 
@@ -234,6 +255,25 @@ class App:
             self.display_surf.blit(a, a_rectangle)
 
             top_y += v_fill + box_height
+
+    def render_options(self):
+        i = 0
+
+        for option in self.topics:
+            i = i + 1
+            buttonpos = "topic_option_button" + str(i)
+
+            if len(option) > 44:
+                option = option[:45] + "..."
+
+            self.render_button(self.positions[buttonpos],
+                               option, 
+                               self.smallfont,
+                               self.colors["buttontext"],
+                               [10, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+
 
     def no_more_questions_handler(self):
         warning = self.bigfont.render(
@@ -431,8 +471,8 @@ class App:
                                self.colors["color_light"],
                                self.colors["color_dark"])
             # Topic button
-            self.render_button(self.positions["topic_button"],
-                               "TOPIC", self.smallfont,
+            self.render_button(self.positions["search_button"],
+                               "Search", self.smallfont,
                                self.colors["buttontext"],
                                [25, 10],
                                self.colors["color_light"],
@@ -440,6 +480,9 @@ class App:
 
             # INPUT BOX
             self.topic_input_box.draw(self.display_surf)
+
+            if len(self.topics) > 0:
+                self.render_options()
 
         # update display
         pygame.display.update()
