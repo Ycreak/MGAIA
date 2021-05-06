@@ -1,9 +1,62 @@
-Rate questions on difficulty
-	Sea of Thieves topic questions must not contain "Sea of Thieves"
-	Check answers and their proximity -> Do we allow "Dell" as the answer for the page "Michael Dell"
-	Generate questions on the fly given a specific topic
-		If this topic needs to be generated automatically, write code to do this
+Don't forget to add comments! 
 
-	Allow dialog in Pygame
-	Allow keeping score in pygame
-	Write game over procedures
+SCORE RELATED
+
+	(Louis) Win Condition?
+		High score of set amount of questions?
+			(maybe save it to csv to show at the end)
+
+	(Louis) Score
+		Penalty integration in score? (harder questions more points)
+		Dependent on current level?
+		More score if topic guessed with fewer questions/answers?
+			Penalty for guessing wrongly?
+
+PYGAME RELATED
+
+	(Luuk) Interesting menu settings
+		How many wikipedia pages from 1 topic?
+
+	(Julia/Elise) Game Mechanics
+		Showing only answers/questions
+		Buying answers to specific questions
+			It would be nice to only show questions and being able to buy answers by clicking them
+		How many questions do we show? 5? All?
+	
+	(Luuk) Better menu design
+		Title
+		Colour
+		Instructions
+
+	(Luuk) Animations
+		Loading bar
+		Computer player
+
+	(Luuk) Topic Button
+		No pressing enter requirement -> no enter
+
+	(Luuk) Overall
+		Better colour scheme
+		Restart button
+		Kinder end game texts
+
+NLP RELATED
+
+	(Philippe) Penalty system more interesting/extensive
+	(Philippe) Answer validation
+
+	(Job) Convert topic to Wikipedia URL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
