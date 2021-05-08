@@ -7,6 +7,9 @@ import subprocess
 import os
 import math
 import wikipedia
+import requests
+import json
+import urllib.parse
 
 from answer_validation import answerIsValid
 
@@ -102,18 +105,17 @@ class App:
                           "play_button": [[self.width-250, self.width-50], [self.height/3 - 50,  self.height/3 - 10], [200, 40]],
                           "search_button": [[self.width-250, self.width-50], [self.height/3 - 100, self.height/3 - 60], [200, 40]],
 
-                          
-                          "topic_input_box":       [[self.width/2-440, self.width/2-240], [self.height/3 - 100, self.height/3 - 60],  [600, 40]],
-                          "topic_option_button1":  [[self.width/2-440, self.width/2-240], [self.height/3 - 50,  self.height/3 - 10],  [600, 40]],
-                          "topic_option_button2":  [[self.width/2-440, self.width/2-240], [self.height/3 - 0,   self.height/3 + 40],  [600, 40]],
-                          "topic_option_button3":  [[self.width/2-440, self.width/2-240], [self.height/3 + 50,  self.height/3 + 90],  [600, 40]],
-                          "topic_option_button4":  [[self.width/2-440, self.width/2-240], [self.height/3 + 100, self.height/3 + 140], [600, 40]],
-                          "topic_option_button5":  [[self.width/2-440, self.width/2-240], [self.height/3 + 150, self.height/3 + 190], [600, 40]],
-                          "topic_option_button6":  [[self.width/2-440, self.width/2-240], [self.height/3 + 200, self.height/3 + 240], [600, 40]],
-                          "topic_option_button7":  [[self.width/2-440, self.width/2-240], [self.height/3 + 250, self.height/3 + 290], [600, 40]],
-                          "topic_option_button8":  [[self.width/2-440, self.width/2-240], [self.height/3 + 300, self.height/3 + 340], [600, 40]],
-                          "topic_option_button9":  [[self.width/2-440, self.width/2-240], [self.height/3 + 350, self.height/3 + 390], [600, 40]],
-                          "topic_option_button10": [[self.width/2-440, self.width/2-240], [self.height/3 + 400, self.height/3 + 440], [600, 40]],
+                          "topic_input_box":      [[self.width/2-440, self.width/2-240], [self.height/3 - 100, self.height/3 - 60],  [600, 40]],
+                          "topic_option_button0": [[self.width/2-440, self.width/2-240], [self.height/3 - 50,  self.height/3 - 10],  [600, 40]],
+                          "topic_option_button1": [[self.width/2-440, self.width/2-240], [self.height/3 - 0,   self.height/3 + 40],  [600, 40]],
+                          "topic_option_button2": [[self.width/2-440, self.width/2-240], [self.height/3 + 50,  self.height/3 + 90],  [600, 40]],
+                          "topic_option_button3": [[self.width/2-440, self.width/2-240], [self.height/3 + 100, self.height/3 + 140], [600, 40]],
+                          "topic_option_button4": [[self.width/2-440, self.width/2-240], [self.height/3 + 150, self.height/3 + 190], [600, 40]],
+                          "topic_option_button5": [[self.width/2-440, self.width/2-240], [self.height/3 + 200, self.height/3 + 240], [600, 40]],
+                          "topic_option_button6": [[self.width/2-440, self.width/2-240], [self.height/3 + 250, self.height/3 + 290], [600, 40]],
+                          "topic_option_button7": [[self.width/2-440, self.width/2-240], [self.height/3 + 300, self.height/3 + 340], [600, 40]],
+                          "topic_option_button8": [[self.width/2-440, self.width/2-240], [self.height/3 + 350, self.height/3 + 390], [600, 40]],
+                          "topic_option_button9": [[self.width/2-440, self.width/2-240], [self.height/3 + 400, self.height/3 + 440], [600, 40]],
 
                           "input_box": [[self.width-510, self.width-10], [self.height-10-32, self.height-10], [500, 32]],
                           "question_button": [[10, 410], [self.height-20-32-50, self.height-20-32], [400, 50]],
@@ -125,7 +127,7 @@ class App:
         self.my_sprite = MySprite()
         self.my_group = pygame.sprite.Group(self.my_sprite)
 
-        self.topics = []
+        self.topic_options = []
 
     def on_init(self):
         pygame.init()
@@ -208,22 +210,32 @@ class App:
             if self.positions["search_button"][0][0] <= self.mouse[0] <= self.positions["search_button"][0][1] and\
                     self.positions["search_button"][1][0] <= self.mouse[1] <= self.positions["search_button"][1][1]:
                 print("Search button pressed")
-                self.topics = wikipedia.search(self.topic)
-                print("Topics found: ", self.topics)
+                self.topic_options = self.find_topic_options(self.topic)
+                print("Topics found: ", self.topic_options)
                 self.on_render()
-            if self.positions["topic_option_button1"][0][0] <= self.mouse[0] <= self.positions["topic_option_button1"][0][1] and\
-                    self.positions["topic_option_button1"][1][0] <= self.mouse[1] <= self.positions["topic_option_button1"][1][1]:
+            # toppic_option_buttons
+            for i in range(0, len(self.topic_options)):
+                button_name = "topic_option_button" + str(i)
+                if self.positions[button_name][0][0] <= self.mouse[0] <= self.positions[button_name][0][1] and\
+                        self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1]:
+                    chosen_topic = self.topic_options[i]
 
-                print('calling topic code')
+                    print("Topic ", chosen_topic, " button pressed. You chose wisely!")
+                    self.subtopics = self.find_subtopics(chosen_topic)
 
-                # TODO: needs to besomewhere else (could also be a topic list)
-                # self.topic = 'Netherlands'
+                    print(self.subtopics)
 
-                subprocess.call(
-                    ['python3', 'main.py', self.topic], cwd="NLP/")
-                # TODO: loading process or maybe a bar? Animation?
-                print('all done!')
-                self.on_render()
+                    random.shuffle(self.subtopics)
+
+                    current_subtopic = self.subtopics.pop()
+
+                    print("Selected subtopic: ", current_subtopic)
+                    
+                    subprocess.call(['python3', 'main.py', current_subtopic], cwd="NLP/")
+                    # TODO: loading process or maybe a bar? Animation?
+
+                    print('all done!')
+                    self.on_render()
 
     def on_loop(self):
         pass
@@ -255,25 +267,6 @@ class App:
             self.display_surf.blit(a, a_rectangle)
 
             top_y += v_fill + box_height
-
-    def render_options(self):
-        i = 0
-
-        for option in self.topics:
-            i = i + 1
-            buttonpos = "topic_option_button" + str(i)
-
-            if len(option) > 44:
-                option = option[:45] + "..."
-
-            self.render_button(self.positions[buttonpos],
-                               option, 
-                               self.smallfont,
-                               self.colors["buttontext"],
-                               [10, 10],
-                               self.colors["color_light"],
-                               self.colors["color_dark"])
-
 
     def no_more_questions_handler(self):
         warning = self.bigfont.render(
@@ -342,13 +335,163 @@ class App:
         self.display_surf.blit(answer_2, answer_2.get_rect(
             center=(self.width/2, self.height/2+40)))
 
+    ###################################
+    # SEARCHING AND DISPLAYING TOPICS #
+    ###################################
+
+    def find_topic_options(self, topic):
+        possible_options = wikipedia.search(topic)
+        options = []
+
+        for option in possible_options:
+            #Lists are not very usefull
+            if "List of " in option:
+                continue
+
+            #Disambiguation pages are useless
+            if "disambiguation" in option:
+                continue
+
+            options.append(option)
+
+        return options
+
+    def render_topic_options(self):
+        i = 0
+
+        for option in self.topic_options:
+            buttonpos = "topic_option_button" + str(i)
+
+            if len(option) > 44:
+                option = option[:45] + "..."
+
+            self.render_button(self.positions[buttonpos],
+                               option, 
+                               self.smallfont,
+                               self.colors["buttontext"],
+                               [10, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+
+            i = i + 1
+
+    def find_subtopics(self, chosen_topic):
+        #The max number of pages for a certain topic 
+        number_of_pages = 10
+
+        #Get the url from the topic
+        chosen_topic_ = chosen_topic.replace(" ", "_")
+        chosen_topic_ = urllib.parse.quote(chosen_topic_)
+        chosen_topic_url = "https://en.wikipedia.org/wiki/" + chosen_topic_
+
+        #Get the first alinea from the Wikipedia page
+        topic_wiki_response = requests.get(chosen_topic_url)
+        topic_wiki_text = topic_wiki_response.text
+        topic_wiki_text_begin = topic_wiki_text.split('<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>')[1]
+        topic_wiki_text_end = topic_wiki_text_begin.split('id="toc"')[0]
+
+        #Get the links from the text
+        topic_wiki_links_begin = topic_wiki_text_end.split('<a href="/wiki/')
+
+        linked_pages = []
+
+        #Check for every link if it is usable
+        for link in topic_wiki_links_begin:
+            page_name_parts = link.split('"')
+
+            page_name = page_name_parts[0]
+
+            #No loops
+            if page_name == chosen_topic:
+                continue
+
+            #Wikipedia main page
+            if page_name == "Main_Page":
+                continue
+
+            #Lists are not very usefull
+            if "List_of_" in page_name:
+                continue
+
+            #Disambiguation pages are useless
+            if "disambiguation" in page_name:
+                continue
+
+            #Not a page but an paragraph on a page
+            if "#" in page_name:
+                continue
+
+            #Some Wikipedia specific pages
+            if "Wikipedia" in page_name:
+                continue
+
+            if "File:" in page_name:
+                continue
+
+            if "Special:" in page_name:
+                continue
+            
+            if "Category:" in page_name:
+                continue
+
+            if "Help:" in page_name:
+                continue
+
+            if "Talk:" in page_name:
+                continue
+
+            if "Portal:" in page_name:
+                continue
+
+            #The first part before any link is not a page
+            if "<div id=" in page_name:
+                continue
+            
+            linked_pages.append(page_name)
+
+        linked_pages_views = {}
+        relevant_pages = {}
+
+        #Get the pageviews for the linked pages
+        for linked_page in linked_pages[:200]:
+
+            linked_url = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/" + linked_page + "/monthly/20210401/20210430"
+
+            pageviews = requests.get(linked_url, headers={"User-Agent":"TopicBot"})
+            pageviews_text = json.loads(pageviews.text)
+
+            if "items" in pageviews_text:
+                linked_pages_views[linked_page] = pageviews_text["items"][0]["views"]
+
+        #Order the pages by view count
+        linked_pages_views_ordered = sorted(linked_pages_views.items(), key=lambda x: x[1], reverse=True)
+
+        index = 0
+        relevant_links = []
+
+        #We only need to check untill we have the amount of relevant pages we need
+        while len(relevant_pages) < number_of_pages and index < len(linked_pages_views_ordered):
+            linked_page = linked_pages_views_ordered[index]
+            linked_url = "https://en.wikipedia.org/wiki/" + linked_page[0]
+            
+            #Get the first alinea from the Wikipedia page
+            linked_response = requests.get(linked_url)
+            linked_text = linked_response.text
+            linked_begin = linked_text.split('<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>')[1]
+            linked_end = linked_begin.split('id="toc"')[0]
+
+            #If the topic is named in the text the page is really relevant
+            if chosen_topic_ in linked_end or chosen_topic in linked_end:
+                relevant_pages[linked_page[0]] = linked_page[1]
+                relevant_links.append(linked_url)
+
+            index = index + 1
+
+        return relevant_links
+
     ######################
     # ANIMATION HANDLING #
     ######################
-
-
-
-
 
     #####################
     # GENERAL RENDERING #
@@ -481,8 +624,8 @@ class App:
             # INPUT BOX
             self.topic_input_box.draw(self.display_surf)
 
-            if len(self.topics) > 0:
-                self.render_options()
+            if len(self.topic_options) > 0:
+                self.render_topic_options()
 
         # update display
         pygame.display.update()

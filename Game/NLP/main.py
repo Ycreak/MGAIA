@@ -61,88 +61,74 @@ def Remove_stopwords(string):
     return filtered_sentence 
   
 # TODO: make a list of topics
-topic = sys.argv[1]
+link = sys.argv[1]
 
-Find_Topics(topic)
+source = urlopen(link).read()# Make a soup 
+soup = BeautifulSoup(source,'lxml')
 
-exit(0)
+title = soup.find(id="firstHeading").string
 
-# Config variables
-subjects_file = 'subjects.txt'
+title = re.sub(r'[^\w\s]', '', title)
 
-# Open the subjects given and put them in a list
-with open(subjects_file) as f:
-    content = f.readlines()
-subjects = [x.strip() for x in content] 
+words = Remove_stopwords(title)
 
-# Extract the links, clean the text and run the NLP on it.
-for link in subjects:
-    source = urlopen(link).read()# Make a soup 
-    soup = BeautifulSoup(source,'lxml')
+# print(words)
 
-    title = soup.find(id="firstHeading").string
-
-    title = re.sub(r'[^\w\s]', '', title)
-
-    words = Remove_stopwords(title)
-
-    # print(words)
-
-    # Extract the plain text content from paragraphs
-    text = ''
-    for paragraph in soup.find_all('p'):
-        text += paragraph.text
-        
-    # Use regex to clean the text of wikipedia formatting
-    text = re.sub(r'\[.*?\]+', '', text)
-    text = text.replace('\n', '')
+# Extract the plain text content from paragraphs
+text = ''
+for paragraph in soup.find_all('p'):
+    text += paragraph.text
     
-    # Hack to generate more questions
-    text1 = text.split()[0:500]
-    text2 = text.split()[500:1000]
+# Use regex to clean the text of wikipedia formatting
+text = re.sub(r'\[.*?\]+', '', text)
+text = text.replace('\n', '')
 
-    text1 = ' '.join([str(elem) for elem in text1])
-    text2 = ' '.join([str(elem) for elem in text2])
+# Hack to generate more questions
+text1 = text.split()[0:500]
+text2 = text.split()[500:1000]
 
-    payload = { "input_text": text1 }
+text1 = ' '.join([str(elem) for elem in text1])
+text2 = ' '.join([str(elem) for elem in text2])
 
-    # Run the model
-    qg = main.QGen()
-    output = qg.predict_shortq(payload)
-    pprint(output)
+payload = { "input_text": text1 }
 
-    # Save the output        
-    for item in output['questions']:
-        # print(item)
-        print(item['Question'], item['Answer'])
-        new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
-        df = df.append(new_line, ignore_index=True)
+# Run the model
+qg = main.QGen()
+output = qg.predict_shortq(payload)
+pprint(output)
 
-    payload = { "input_text": text2 }
+# Save the output        
+for item in output['questions']:
+    # print(item)
+    print(item['Question'], item['Answer'])
+    new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
+    df = df.append(new_line, ignore_index=True)
 
-    output = qg.predict_shortq(payload)
-    pprint(output)
-            
-    for item in output['questions']:
-        # print(item)
-        print(item['Question'], item['Answer'])
-        new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
-        df = df.append(new_line, ignore_index=True)
+payload = { "input_text": text2 }
 
-    # Now check the dataframe for proper answers
-    df["penalty"] = 0
-
-    for i in range(len(df)):
+output = qg.predict_shortq(payload)
+pprint(output)
         
-        q = df["question"][i].lower()
+for item in output['questions']:
+    # print(item)
+    print(item['Question'], item['Answer'])
+    new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
+    df = df.append(new_line, ignore_index=True)
 
-        # q = ''.join(ch for ch in q if not ch.isupper())
-        
-        for word in words:
-            # print(word, q)
-            if word in q:
-                print(q, 'contains', word)
-                df["penalty"][i] += 1
+# Now check the dataframe for proper answers
+df["penalty"] = 0
+
+for i in range(len(df)):
+    
+    q = df["question"][i].lower()
+
+    # q = ''.join(ch for ch in q if not ch.isupper())
+    
+    for word in words:
+        # print(word, q)
+        if word in q:
+            print(q, 'contains', word)
+            df["penalty"][i] += 1
 
 df = df.sort_values(by=['penalty'])
 print(df)

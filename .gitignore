@@ -131,3 +131,8 @@ dmypy.json
 # NLP
 Game/NLP/s2v_old
 Game/NLP/bak
+Game/NLP/.DS_Store
+
+Game/.DS_Store
+
+.DS_Store
