@@ -10,9 +10,10 @@ import wikipedia
 import requests
 import json
 import urllib.parse
+from threading import Thread
 
 from answer_validation import answerIsValid
-
+from NLP.question_generator import Question_Generator
 
 
 # TODO resetting game when going to menu?
@@ -128,8 +129,14 @@ class App:
         self.sprite_riddler = MySprite('img/riddler', 30, 440, 10, 10)
         self.sprit_group_riddler = pygame.sprite.Group(self.sprite_riddler)
 
-        self.logo = pygame.image.load("img/icon.png")
+        self.sprite_menu_riddler = MySprite('img/riddler', 700, 525, 10, 10)
+        self.sprit_group_menu_riddler = pygame.sprite.Group(self.sprite_menu_riddler)
 
+        self.logo = pygame.image.load("img/icon.png")
+        
+        self.show_bubble = True
+        self.img_bubble = pygame.image.load("img/bubble.png")
+        
         self.topic_options = []
 
     def on_init(self):
@@ -157,6 +164,7 @@ class App:
         self.bigfont = pygame.font.SysFont('Corbel', 70)
 
         self.tinyfont = pygame.font.SysFont('Corbel', 30)
+        self.mousefont = pygame.font.SysFont('Corbel', 20)
 
         self.mouse = pygame.mouse.get_pos()
 
@@ -167,6 +175,8 @@ class App:
 
         self.score = 6
         self.topic = ''
+        self.status = 'welcome'
+
 
         self.add_question()
 
@@ -220,10 +230,16 @@ class App:
                 print("Search button pressed")
                 if self.topic == '':
                     print('No Topic selected, please press enter after typing')
+                    self.status = 'press_enter'
                     # TODO: put this on screen, maybe grey out button if no topic has yet been entered?
-                else:    
+                else:
+                    self.status = 'searching_topic'    
                     self.topic_options = self.find_topic_options(self.topic)
                     print("Topics found: ", self.topic_options)
+
+                    if self.topic_options == []:
+                        self.status = "no_topics_found"
+
                 self.on_render()
             # toppic_option_buttons
             for i in range(0, len(self.topic_options)):
@@ -233,6 +249,8 @@ class App:
                     chosen_topic = self.topic_options[i]
 
                     print("Topic ", chosen_topic, " button pressed. You chose wisely!")
+                    self.status = "topic_chosen"
+
                     self.subtopics = self.find_subtopics(chosen_topic)
 
                     print(self.subtopics)
@@ -244,10 +262,18 @@ class App:
                     print("Selected subtopic: ", current_subtopic)
                     
                     # TODO: Now everything is Python3, this can just be an import
-                    subprocess.call(['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
+                    # subprocess.call(['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
+                    Question_Generator(current_subtopic)
+                    # thread = Thread(target = Question_Generator(current_subtopic))
+                    # thread.start()
+                    # thread.join()
+                    # print("thread finished...exiting")
+                    
                     # TODO: loading process or maybe a bar? Animation?
-
+                    self.status = 'questions_generated'
                     print('all done!')
+
+
                     self.on_render()
 
     def on_loop(self):
@@ -657,11 +683,57 @@ class App:
             if len(self.topic_options) > 0:
                 self.render_topic_options()
 
-            self.sprit_group_riddler.update()
-            self.sprit_group_riddler.draw(self.display_surf)
+            # Draw the riddler
+            self.sprit_group_menu_riddler.update()
+            self.sprit_group_menu_riddler.draw(self.display_surf)
 
+            # Draw its speech bubble
+            if self.show_bubble:
+                if self.status == 'welcome':
+
+                    self.riddler_text_string1 = "Welcome!"
+                    self.riddler_text_string2 = "Select a topic!"
+
+                elif self.status == 'press_enter':
+                    self.riddler_text_string1 = "Press enter in"
+                    self.riddler_text_string2 = "that search bar!"
+
+                elif self.status == 'topic_entered':
+                    self.riddler_text_string1 = "OK, now press."
+                    self.riddler_text_string2 = "the search button!"
+
+                elif self.status == 'searching_topic':
+                    self.riddler_text_string1 = "Select one of these"
+                    self.riddler_text_string2 = "interesting topics!"
+
+                elif self.status == 'topic_chosen':
+                    self.riddler_text_string1 = "I got a good one!"
+                    self.riddler_text_string2 = "This will be epic!"
+
+                elif self.status == 'no_topics_found':
+                    self.riddler_text_string1 = "That's gibberish!"
+                    self.riddler_text_string2 = "Try again!"
+
+                elif self.status == 'questions_generated':
+                    self.riddler_text_string1 = "I am ready!"
+                    self.riddler_text_string2 = "Please press play."
+
+                self.display_surf.blit(self.img_bubble, (775, 425))
+
+                self.render_text(self.riddler_text_string1, 850, 470, self.colors["buttontext"])
+                self.render_text(self.riddler_text_string2, 850, 490, self.colors["buttontext"])
+            
         # update display
         pygame.display.update()
+
+    def render_text(self, string, x, y, colour): #self.colors["buttontext"]
+
+        text = self.mousefont.render(
+        string, True, colour)
+        rect = text.get_rect(center=(x, y))
+        self.display_surf.blit(text, rect)
+
+        # return text, rect
 
     def on_cleanup(self):
         pygame.quit()
@@ -686,6 +758,7 @@ class App:
                 if topic_input != None:
                     print("topic input: ", topic_input)
                     self.topic = topic_input
+                    self.status = "topic_entered"
             self.answer_input_box.update()
             self.topic_input_box.update()
 

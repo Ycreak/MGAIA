@@ -55,6 +55,7 @@ NEW PROBLEMS
 
 	Ability to return from NO MORE QUESTION screen (and others)
 
+	Feed NLP per line (or max 3 lines) for better question generation
 
 QUESTIONS
 	
