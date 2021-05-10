@@ -47,11 +47,17 @@ NLP RELATED
 
 	(Job) Convert topic to Wikipedia URL
 
+NEW PROBLEMS
+
+	Show no topic warning
+	
+	At Play Game, reread dataframe
+
+	Ability to return from NO MORE QUESTION screen (and others)
 
 
-
-
-
+QUESTIONS
+	
 
 
 

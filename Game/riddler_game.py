@@ -23,10 +23,10 @@ from answer_validation import answerIsValid
 # TODO: pressing enter for topic input maybe redundant?
 
 class MySprite(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, image, x, y, w, h):
         super(MySprite, self).__init__()
         #adding all the images to sprite array
-        self.images = self.load_images('img/riddler')
+        self.images = self.load_images(image)
         
         #index value to get the image from the array
         #initially it is 0 
@@ -36,7 +36,7 @@ class MySprite(pygame.sprite.Sprite):
         self.image = self.images[math.floor(self.index)]
 
         #creating a rect at position x,y (5,5) of size (150,198) which is the size of sprite 
-        self.rect = pygame.Rect(30, 440, 10, 10)
+        self.rect = pygame.Rect(x,y,w,h)
 
     def load_images(self, path):
         """
@@ -80,13 +80,13 @@ class App:
         self._running = True
         self.display_surf = None
 
-        self.menupage = False
-        self.gamepage = True
+        self.menupage = True
+        self.gamepage = False
 
         self.size = self.width, self.height = 1000, 700
-        self.colors = {"bg_color": (60, 25, 60),
+        self.colors = {"bg_color": (92, 219, 148),#(60, 25, 60),
                        "color_light": (170, 170, 170),
-                       "color_dark": (100, 100, 100),
+                       "color_dark": (5, 57, 107), # Button
                        "buttontext": (255, 255, 255),
                        "questiontext": (0, 0, 0),
                        "answertext": (60, 25, 60),
@@ -95,8 +95,9 @@ class App:
                        "warningbox": (179, 58, 58),
                        "victorytext": (255, 255, 255),
                        "victorybox": (0, 183, 0),
-                       "inputactive": pygame.Color('dodgerblue2'),
-                       "inputinactive": pygame.Color('lightskyblue3')}
+                       "inputactive": (246, 134, 133), # pygame.Color('dodgerblue2'),  # Text box
+                       "inputinactive": (246, 134, 133),# pygame.Color('lightskyblue3')}
+                       } 
         # x_left, x_right, y_top, y_bottom, width, height
         self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]],
                           "questions": [[5, self.width-5], [55, 85], [self.width-10, 30]],
@@ -124,14 +125,17 @@ class App:
 
         self.csv_name = './NLP/dataframe.csv'
 
-        self.my_sprite = MySprite()
-        self.my_group = pygame.sprite.Group(self.my_sprite)
+        self.sprite_riddler = MySprite('img/riddler', 30, 440, 10, 10)
+        self.sprit_group_riddler = pygame.sprite.Group(self.sprite_riddler)
+
+        self.logo = pygame.image.load("img/icon.png")
 
         self.topic_options = []
 
     def on_init(self):
         pygame.init()
         pygame.display.set_caption('Riddler Game')
+        pygame.display.set_icon(self.logo)
         self.clock = pygame.time.Clock()
 
         input_font = pygame.font.Font(None, 32)
@@ -152,6 +156,8 @@ class App:
         self.questionfont = pygame.font.SysFont('Corbel', 25)
         self.bigfont = pygame.font.SysFont('Corbel', 70)
 
+        self.tinyfont = pygame.font.SysFont('Corbel', 30)
+
         self.mouse = pygame.mouse.get_pos()
 
         self.no_more_questions = False
@@ -160,7 +166,7 @@ class App:
         self.questions_answers_displayed = []
 
         self.score = 6
-        # self.topic = 'Netherlands'
+        self.topic = ''
 
         self.add_question()
 
@@ -205,13 +211,19 @@ class App:
                     self.positions["play_button"][1][0] <= self.mouse[1] <= self.positions["play_button"][1][1]:
                 self.gamepage = True
                 self.menupage = False
+                self.questions_answers_database = pd.read_csv(self.csv_name, sep=',')
+
                 self.on_render()
             # search button
             if self.positions["search_button"][0][0] <= self.mouse[0] <= self.positions["search_button"][0][1] and\
                     self.positions["search_button"][1][0] <= self.mouse[1] <= self.positions["search_button"][1][1]:
                 print("Search button pressed")
-                self.topic_options = self.find_topic_options(self.topic)
-                print("Topics found: ", self.topic_options)
+                if self.topic == '':
+                    print('No Topic selected, please press enter after typing')
+                    # TODO: put this on screen, maybe grey out button if no topic has yet been entered?
+                else:    
+                    self.topic_options = self.find_topic_options(self.topic)
+                    print("Topics found: ", self.topic_options)
                 self.on_render()
             # toppic_option_buttons
             for i in range(0, len(self.topic_options)):
@@ -231,7 +243,8 @@ class App:
 
                     print("Selected subtopic: ", current_subtopic)
                     
-                    subprocess.call(['python3', 'main.py', current_subtopic], cwd="NLP/")
+                    # TODO: Now everything is Python3, this can just be an import
+                    subprocess.call(['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
                     # TODO: loading process or maybe a bar? Animation?
 
                     print('all done!')
@@ -590,13 +603,30 @@ class App:
                 self.give_up_handler()
 
             # Animations
-            self.my_group.update()
-            self.my_group.draw(self.display_surf)
+            self.sprit_group_riddler.update()
+            self.sprit_group_riddler.draw(self.display_surf)
 
 
         if self.menupage:
 
             self.display_surf.fill(self.colors["bg_color"])
+
+            title = self.bigfont.render(
+                "THE RIDDLER GAME", True, self.colors["buttontext"])
+            title_rectangle = title.get_rect(center=(self.width/2, 40))
+            self.display_surf.blit(title, title_rectangle)
+
+            subtext_string = "Type a topic in the search bar and press enter. Next, select one of the resulting Wikipedia Pages."
+            subtext = self.tinyfont.render(
+                subtext_string, True, self.colors["buttontext"])
+            subtext_rectangle = subtext.get_rect(center=(self.width/2, 80))
+            self.display_surf.blit(subtext, subtext_rectangle)
+
+            subtext_string2 = "The Riddler will now find a related article and asks questions about it. Your task is to find its title!"
+            subtext2 = self.tinyfont.render(
+                subtext_string2, True, self.colors["buttontext"])
+            subtext_rectangle2 = subtext2.get_rect(center=(self.width/2, 105))
+            self.display_surf.blit(subtext2, subtext_rectangle2)
 
             # BUTTONS
             # exit button
@@ -615,7 +645,7 @@ class App:
                                self.colors["color_dark"])
             # Topic button
             self.render_button(self.positions["search_button"],
-                               "Search", self.smallfont,
+                               "SEARCH", self.smallfont,
                                self.colors["buttontext"],
                                [25, 10],
                                self.colors["color_light"],
@@ -626,6 +656,9 @@ class App:
 
             if len(self.topic_options) > 0:
                 self.render_topic_options()
+
+            self.sprit_group_riddler.update()
+            self.sprit_group_riddler.draw(self.display_surf)
 
         # update display
         pygame.display.update()

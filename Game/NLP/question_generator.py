@@ -19,6 +19,7 @@ from pprint import pprint
 import pandas as pd
 import re
 import sys
+import urllib
 
 # Code import
 from get_relevant_pages import Find_Topics
@@ -66,9 +67,10 @@ link = sys.argv[1]
 source = urlopen(link).read()# Make a soup 
 soup = BeautifulSoup(source,'lxml')
 
-title = soup.find(id="firstHeading").string
-
-title = re.sub(r'[^\w\s]', '', title)
+# Extract the name of the page
+topic_name = link.split("/")[-1]
+topic_name_normal = topic_name.replace("_", " ")
+title = urllib.parse.unquote(topic_name_normal)
 
 words = Remove_stopwords(title)
 
