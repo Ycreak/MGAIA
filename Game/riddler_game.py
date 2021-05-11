@@ -21,12 +21,6 @@ from mysprite import MySprite
 
 import NLP.topic_finder as tf
 
-# TODO resetting game when going to menu?
-# TODO: reset game when giving up?
-# TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
-# TODO: find wikipedia URLs from a given topic (in the NLP code)
-# TODO: pressing enter for topic input maybe redundant?
-
 
 class App:
     def __init__(self):
@@ -97,9 +91,10 @@ class App:
         self.questions_answers_displayed = []
 
         # gamestate
-        self.score = 6
+        self.score = 20
         self.topic = ''
         self.status = 'welcome'
+        self.question_status = "default"
         self.player_won = False
         self.given_up = False
         self._running = True
@@ -126,16 +121,25 @@ class App:
                     # TODO: how to handle this?
                     pass
 
-                self.add_question()
-                self.on_render()
+                # only add question in default mode, not when buying answer
+                if self.question_status == "default":
+                    self.add_question()
+                    self.on_render()
 
             # buy answer button
             if self.positions["answer_button"][0][0] <= self.mouse[0] <= self.positions["answer_button"][0][1] and\
                     self.positions["answer_button"][1][0] <= self.mouse[1] <= self.positions["answer_button"][1][1]:
 
                 # TODO buy question handler
-                print("clicked question")
-                self.status = 'buy_question'
+                if self.question_status == "default":
+                    self.question_status = "buy_answer"
+                else:
+                    self.question_status = "default"
+                self.on_render()
+
+            if self.question_status == "buy_answer":
+                print("buying answer")
+                _question_handling._buy_answer(self)
                 self.on_render()
 
             if self.positions["menu_button"][0][0] <= self.mouse[0] <= self.positions["menu_button"][0][1] and self.positions["menu_button"][1][0] <= self.mouse[1] <= self.positions["menu_button"][1][1]:
@@ -176,32 +180,33 @@ class App:
 
                 self.on_render()
             # toppic_option_buttons
-            for i in range(0, len(self.topic_options)):
-                button_name = "topic_option_button" + str(i)
-                if self.positions[button_name][0][0] <= self.mouse[0] <= self.positions[button_name][0][1] and\
-                        self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1]:
-                    chosen_topic = self.topic_options[i]
+            if self.question_status == "default":
+                for i in range(0, len(self.topic_options)):
+                    button_name = "topic_option_button" + str(i)
+                    if self.positions[button_name][0][0] <= self.mouse[0] <= self.positions[button_name][0][1] and\
+                            self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1]:
+                        chosen_topic = self.topic_options[i]
 
-                    # We now pressed a topic. Find a related topic to ask questions about
-                    print("Topic ", chosen_topic,
-                          " button pressed. You chose wisely!")
-                    self.status = "topic_chosen"
+                        # We now pressed a topic. Find a related topic to ask questions about
+                        print("Topic ", chosen_topic,
+                              " button pressed. You chose wisely!")
+                        self.status = "topic_chosen"
 
-                    self.subtopics = tf.find_subtopics(chosen_topic)
+                        self.subtopics = tf.find_subtopics(chosen_topic)
 
-                    print(self.subtopics)
+                        print(self.subtopics)
 
-                    random.shuffle(self.subtopics)
+                        random.shuffle(self.subtopics)
 
-                    current_subtopic = self.subtopics.pop()
+                        current_subtopic = self.subtopics.pop()
 
-                    print("Selected subtopic: ", current_subtopic)
+                        print("Selected subtopic: ", current_subtopic)
 
-                    # TODO: Now everything is Python3, this can just be an import
-                    self.quest_gen = subprocess.Popen(
-                        ['python3', 'q2.py', current_subtopic], cwd="NLP/")
+                        # TODO: Now everything is Python3, this can just be an import
+                        self.quest_gen = subprocess.Popen(
+                            ['python3', 'q2.py', current_subtopic], cwd="NLP/")
 
-                    self.on_render()
+                        self.on_render()
 
     def on_loop(self):
         pass

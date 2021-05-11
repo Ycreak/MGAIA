@@ -7,6 +7,36 @@ import random
 ####################################
 # PRINTING & HANDLING OF QUESTIONS #
 ####################################
+
+def _answer_buying_event_handler(state, top_position):
+    top_x = top_position[0][0]
+    top_y = top_position[1][0]
+    box_width = top_position[2][0]
+    box_height = top_position[2][1]
+
+    v_fill = 10
+
+    for box_id in range(len(state.questions_answers_displayed)):
+        if top_x <= state.mouse[0] <= top_x+box_width and\
+                top_y <= state.mouse[1] <= box_height+top_y:
+            price = state.questions_answers_displayed[box_id][3]
+            if price <= state.score:
+                return box_id, price
+
+        top_y += v_fill + box_height
+    return -1, -1
+
+
+def _buy_answer(state):
+    answer_id, price = _answer_buying_event_handler(
+        state, state.positions["questions"])
+    if answer_id != -1:
+        # bought a question
+        state.score -= price
+        state.questions_answers_displayed[answer_id][2] = state.answers_displayed_questions[answer_id]
+        state.question_status = "default"
+
+
 def _render_questions(state, top_position):
     top_x = top_position[0][0]
     top_y = top_position[1][0]
@@ -20,11 +50,11 @@ def _render_questions(state, top_position):
         q = state.questionfont.render(
             question, True, state.colors["questiontext"])
 
-        if state.status == "buy_answer":
+        if state.question_status == "buy_answer":
             # TODO print score/price of answer
-            a = state.questionfont.render(
-            str(penalty), True, state.colors["answertext"])
-        else: 
+            a = state.questionfont.render("PRICE = " +
+                                          str(penalty), True, state.colors["answertext"])
+        else:
             a = state.questionfont.render(
                 answer, True, state.colors["answertext"])
         qa_rectangle = pygame.draw.rect(
