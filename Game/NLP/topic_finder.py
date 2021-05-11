@@ -1,45 +1,39 @@
-''' Modern Gaming AI Algorithms
+import wikipedia
+import requests
+import json
+import urllib.parse
 
-This script extracts a Wikipedia article and finds the most relevant pages linked in the article.
+def find_topic_options(topic):
+    possible_options = wikipedia.search(topic)
+    options = []
 
-Written by Job van der Zwaag
+    for option in possible_options:
+        #Lists are not very usefull
+        if "List of " in option:
+            continue
 
-'''
+        #Disambiguation pages are useless
+        if "disambiguation" in option:
+            continue
 
+        options.append(option)
 
-def Find_Topics(topic):
+    return options
 
-    import requests
-    import json
-    import time
-    import urllib.parse
-
-    print('he')
-    exit(0)
-
-    #Input
-    topic_url = 'https://en.wikipedia.org/wiki/United_States'
+def find_subtopics(chosen_topic):
+    #The max number of pages for a certain topic 
     number_of_pages = 10
-    print_information = False
 
-    #Get the topic from the url and make it readable
-    topic_name = topic_url.split("/")[-1]
-    topic_name_normal = topic_name.replace("_", " ")
-    topic_name_normal = urllib.parse.unquote(topic_name_normal)
-
-    
-
-    if print_information:
-        print("Finding pages about the topic: ", topic_name_normal)
+    #Get the url from the topic
+    chosen_topic_ = chosen_topic.replace(" ", "_")
+    chosen_topic_ = urllib.parse.quote(chosen_topic_)
+    chosen_topic_url = "https://en.wikipedia.org/wiki/" + chosen_topic_
 
     #Get the first alinea from the Wikipedia page
-    topic_wiki_response = requests.get(topic_url)
+    topic_wiki_response = requests.get(chosen_topic_url)
     topic_wiki_text = topic_wiki_response.text
     topic_wiki_text_begin = topic_wiki_text.split('<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>')[1]
     topic_wiki_text_end = topic_wiki_text_begin.split('id="toc"')[0]
-
-    if print_information:
-        print(topic_name_normal, " page received from Wikipedia.")
 
     #Get the links from the text
     topic_wiki_links_begin = topic_wiki_text_end.split('<a href="/wiki/')
@@ -53,7 +47,7 @@ def Find_Topics(topic):
         page_name = page_name_parts[0]
 
         #No loops
-        if page_name == topic_name:
+        if page_name == chosen_topic:
             continue
 
         #Wikipedia main page
@@ -100,9 +94,6 @@ def Find_Topics(topic):
         
         linked_pages.append(page_name)
 
-    if print_information:
-        print("Normal links extracted from page. ", len(linked_pages), " links found.")
-
     linked_pages_views = {}
     relevant_pages = {}
 
@@ -120,9 +111,6 @@ def Find_Topics(topic):
     #Order the pages by view count
     linked_pages_views_ordered = sorted(linked_pages_views.items(), key=lambda x: x[1], reverse=True)
 
-    if print_information:
-        print("Looked at the number of views of the linked pages.")
-
     index = 0
     relevant_links = []
 
@@ -138,30 +126,10 @@ def Find_Topics(topic):
         linked_end = linked_begin.split('id="toc"')[0]
 
         #If the topic is named in the text the page is really relevant
-        if topic_name in linked_end or topic_name_normal in linked_end:
+        if chosen_topic_ in linked_end or chosen_topic in linked_end:
             relevant_pages[linked_page[0]] = linked_page[1]
             relevant_links.append(linked_url)
 
         index = index + 1
 
-    if print_information:
-        print("Checked if the linked pages were actually relevant.")
-
-    if print_information:
-        print("\nRelevant pages:")
-
-        for relevant_page in relevant_pages.items():
-            #Get the topic from the url and make it readable
-            normal_name = relevant_page[0].replace("_", " ")
-            normal_name = urllib.parse.unquote(normal_name)
-
-            print(normal_name, ": ", relevant_page[1])
-
-    if print_information:
-        print("\nRelevant links:")
-
-    print(relevant_links)
-
-
-
-
+    return relevant_links

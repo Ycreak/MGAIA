@@ -57,6 +57,8 @@ NEW PROBLEMS
 
 	Feed NLP per line (or max 3 lines) for better question generation
 
+	Topic buttons only left clickable
+
 QUESTIONS
 	
 

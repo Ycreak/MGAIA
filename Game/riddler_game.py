@@ -6,15 +6,12 @@ import random
 import subprocess
 import os
 import math
-import wikipedia
-import requests
-import json
-import urllib.parse
-from threading import Thread
+
+import threading
 
 from answer_validation import answerIsValid
 from NLP.question_generator import Question_Generator
-
+import NLP.topic_finder as tf
 
 # TODO resetting game when going to menu?
 # TODO: reset game when giving up?
@@ -234,7 +231,7 @@ class App:
                     # TODO: put this on screen, maybe grey out button if no topic has yet been entered?
                 else:
                     self.status = 'searching_topic'    
-                    self.topic_options = self.find_topic_options(self.topic)
+                    self.topic_options = tf.find_topic_options(self.topic)
                     print("Topics found: ", self.topic_options)
 
                     if self.topic_options == []:
@@ -248,10 +245,11 @@ class App:
                         self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1]:
                     chosen_topic = self.topic_options[i]
 
+                    # We now pressed a topic. Find a related topic to ask questions about
                     print("Topic ", chosen_topic, " button pressed. You chose wisely!")
                     self.status = "topic_chosen"
 
-                    self.subtopics = self.find_subtopics(chosen_topic)
+                    self.subtopics = tf.find_subtopics(chosen_topic)
 
                     print(self.subtopics)
 
@@ -262,22 +260,17 @@ class App:
                     print("Selected subtopic: ", current_subtopic)
                     
                     # TODO: Now everything is Python3, this can just be an import
-                    # subprocess.call(['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
-                    Question_Generator(current_subtopic)
-                    # thread = Thread(target = Question_Generator(current_subtopic))
-                    # thread.start()
-                    # thread.join()
-                    # print("thread finished...exiting")
-                    
-                    # TODO: loading process or maybe a bar? Animation?
-                    self.status = 'questions_generated'
-                    print('all done!')
-
+                    self.quest_gen = subprocess.Popen(['python3', 'q2.py', current_subtopic], cwd="NLP/")
 
                     self.on_render()
 
     def on_loop(self):
         pass
+
+    # def my_inline_function(self, current_subtopic):
+    #     # do some stuff
+    #     download_thread = threading.Thread(target=Question_Generator(current_subtopic), name="Downloader", args=current_subtopic)
+    #     download_thread.start()
 
     ####################################
     # PRINTING & HANDLING OF QUESTIONS #
@@ -378,23 +371,6 @@ class App:
     # SEARCHING AND DISPLAYING TOPICS #
     ###################################
 
-    def find_topic_options(self, topic):
-        possible_options = wikipedia.search(topic)
-        options = []
-
-        for option in possible_options:
-            #Lists are not very usefull
-            if "List of " in option:
-                continue
-
-            #Disambiguation pages are useless
-            if "disambiguation" in option:
-                continue
-
-            options.append(option)
-
-        return options
-
     def render_topic_options(self):
         i = 0
 
@@ -414,119 +390,6 @@ class App:
 
             i = i + 1
 
-    def find_subtopics(self, chosen_topic):
-        #The max number of pages for a certain topic 
-        number_of_pages = 10
-
-        #Get the url from the topic
-        chosen_topic_ = chosen_topic.replace(" ", "_")
-        chosen_topic_ = urllib.parse.quote(chosen_topic_)
-        chosen_topic_url = "https://en.wikipedia.org/wiki/" + chosen_topic_
-
-        #Get the first alinea from the Wikipedia page
-        topic_wiki_response = requests.get(chosen_topic_url)
-        topic_wiki_text = topic_wiki_response.text
-        topic_wiki_text_begin = topic_wiki_text.split('<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>')[1]
-        topic_wiki_text_end = topic_wiki_text_begin.split('id="toc"')[0]
-
-        #Get the links from the text
-        topic_wiki_links_begin = topic_wiki_text_end.split('<a href="/wiki/')
-
-        linked_pages = []
-
-        #Check for every link if it is usable
-        for link in topic_wiki_links_begin:
-            page_name_parts = link.split('"')
-
-            page_name = page_name_parts[0]
-
-            #No loops
-            if page_name == chosen_topic:
-                continue
-
-            #Wikipedia main page
-            if page_name == "Main_Page":
-                continue
-
-            #Lists are not very usefull
-            if "List_of_" in page_name:
-                continue
-
-            #Disambiguation pages are useless
-            if "disambiguation" in page_name:
-                continue
-
-            #Not a page but an paragraph on a page
-            if "#" in page_name:
-                continue
-
-            #Some Wikipedia specific pages
-            if "Wikipedia" in page_name:
-                continue
-
-            if "File:" in page_name:
-                continue
-
-            if "Special:" in page_name:
-                continue
-            
-            if "Category:" in page_name:
-                continue
-
-            if "Help:" in page_name:
-                continue
-
-            if "Talk:" in page_name:
-                continue
-
-            if "Portal:" in page_name:
-                continue
-
-            #The first part before any link is not a page
-            if "<div id=" in page_name:
-                continue
-            
-            linked_pages.append(page_name)
-
-        linked_pages_views = {}
-        relevant_pages = {}
-
-        #Get the pageviews for the linked pages
-        for linked_page in linked_pages[:200]:
-
-            linked_url = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/" + linked_page + "/monthly/20210401/20210430"
-
-            pageviews = requests.get(linked_url, headers={"User-Agent":"TopicBot"})
-            pageviews_text = json.loads(pageviews.text)
-
-            if "items" in pageviews_text:
-                linked_pages_views[linked_page] = pageviews_text["items"][0]["views"]
-
-        #Order the pages by view count
-        linked_pages_views_ordered = sorted(linked_pages_views.items(), key=lambda x: x[1], reverse=True)
-
-        index = 0
-        relevant_links = []
-
-        #We only need to check untill we have the amount of relevant pages we need
-        while len(relevant_pages) < number_of_pages and index < len(linked_pages_views_ordered):
-            linked_page = linked_pages_views_ordered[index]
-            linked_url = "https://en.wikipedia.org/wiki/" + linked_page[0]
-            
-            #Get the first alinea from the Wikipedia page
-            linked_response = requests.get(linked_url)
-            linked_text = linked_response.text
-            linked_begin = linked_text.split('<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>')[1]
-            linked_end = linked_begin.split('id="toc"')[0]
-
-            #If the topic is named in the text the page is really relevant
-            if chosen_topic_ in linked_end or chosen_topic in linked_end:
-                relevant_pages[linked_page[0]] = linked_page[1]
-                relevant_links.append(linked_url)
-
-            index = index + 1
-
-        return relevant_links
 
     ######################
     # ANIMATION HANDLING #
@@ -634,6 +497,15 @@ class App:
 
 
         if self.menupage:
+            # TODO: this needs to be better
+            # Check if the questions are generated
+            try:
+                poll = self.quest_gen.poll()
+                if poll is not None:
+]                    self.status = 'questions_generated'
+            except:
+                # print('wrong')
+                pass
 
             self.display_surf.fill(self.colors["bg_color"])
 
@@ -707,8 +579,8 @@ class App:
                     self.riddler_text_string2 = "interesting topics!"
 
                 elif self.status == 'topic_chosen':
-                    self.riddler_text_string1 = "I got a good one!"
-                    self.riddler_text_string2 = "This will be epic!"
+                    self.riddler_text_string1 = "Let me think of"
+                    self.riddler_text_string2 = "some questions!"
 
                 elif self.status == 'no_topics_found':
                     self.riddler_text_string1 = "That's gibberish!"
@@ -727,7 +599,14 @@ class App:
         pygame.display.update()
 
     def render_text(self, string, x, y, colour): #self.colors["buttontext"]
+        """Small function to render text on screen in pygame
 
+        Args:
+            string (string): text to be put on screen
+            x (int): x coordinate
+            y (int): y coordinate
+            colour (dict entry): colour of the button/text
+        """        
         text = self.mousefont.render(
         string, True, colour)
         rect = text.get_rect(center=(x, y))
