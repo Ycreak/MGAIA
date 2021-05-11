@@ -10,7 +10,6 @@ import math
 import threading
 
 # class methods, moved to external files for clarity
-import _search_topics
 import _question_handling
 
 # colors, positions etc
@@ -244,6 +243,25 @@ class App:
     #####################
     # GENERAL RENDERING #
     #####################
+
+    def render_topic_options(self):
+        i = 0
+
+        for option in self.topic_options:
+            buttonpos = "topic_option_button" + str(i)
+
+            if len(option) > 44:
+                option = option[:45] + "..."
+
+            self.render_button(self.positions[buttonpos],
+                               option,
+                               self.smallfont,
+                               self.colors["buttontext"],
+                               [10, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+
+            i = i + 1
 
     def render_button(self, position_list, text, font, textcolor, text_offset, hover_color, color):
         if position_list[0][0] <= self.mouse[0] <= position_list[0][1] \
