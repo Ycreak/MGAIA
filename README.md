@@ -1,4 +1,7 @@
 # MGAIA
+Navigate to the Game folder
+$ cd Game
+
 Create a virtual environment
 $ python3 -m venv env
 
@@ -16,5 +19,6 @@ Navigate to the NLP folder and download the following dataset (for question gene
 wget https://github.com/explosion/sense2vec/releases/download/v1.0.0/s2v_reddit_2015_md.tar.gz
 tar -xvf  s2v_reddit_2015_md.tar.gz
 
-Run the game
+Return to the Game folder and run the game
+$ cd ..
 $ python3 riddler_game.py

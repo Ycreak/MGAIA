@@ -6,11 +6,8 @@ import random
 import subprocess
 import os
 import math
-import wikipedia
-import requests
-import json
-import urllib.parse
-from threading import Thread
+
+import threading
 
 # class methods, moved to external files for clarity
 import _search_topics
@@ -23,12 +20,14 @@ from answer_validation import answerIsValid
 from NLP.question_generator import Question_Generator
 from mysprite import MySprite
 
+import NLP.topic_finder as tf
 
 # TODO resetting game when going to menu?
 # TODO: reset game when giving up?
 # TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
 # TODO: find wikipedia URLs from a given topic (in the NLP code)
 # TODO: pressing enter for topic input maybe redundant?
+
 
 class App:
     def __init__(self):
@@ -170,7 +169,7 @@ class App:
                     # TODO: put this on screen, maybe grey out button if no topic has yet been entered?
                 else:
                     self.status = 'searching_topic'
-                    self.topic_options = self.find_topic_options(self.topic)
+                    self.topic_options = tf.find_topic_options(self.topic)
                     print("Topics found: ", self.topic_options)
 
                     if self.topic_options == []:
@@ -184,11 +183,12 @@ class App:
                         self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1]:
                     chosen_topic = self.topic_options[i]
 
+                    # We now pressed a topic. Find a related topic to ask questions about
                     print("Topic ", chosen_topic,
                           " button pressed. You chose wisely!")
                     self.status = "topic_chosen"
 
-                    self.subtopics = self.find_subtopics(chosen_topic)
+                    self.subtopics = tf.find_subtopics(chosen_topic)
 
                     print(self.subtopics)
 
@@ -199,33 +199,25 @@ class App:
                     print("Selected subtopic: ", current_subtopic)
 
                     # TODO: Now everything is Python3, this can just be an import
-                    # subprocess.call(['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
-                    Question_Generator(current_subtopic)
-                    # thread = Thread(target = Question_Generator(current_subtopic))
-                    # thread.start()
-                    # thread.join()
-                    # print("thread finished...exiting")
-
-                    # TODO: loading process or maybe a bar? Animation?
-                    self.status = 'questions_generated'
-                    print('all done!')
+                    self.quest_gen = subprocess.Popen(
+                        ['python3', 'q2.py', current_subtopic], cwd="NLP/")
 
                     self.on_render()
 
     def on_loop(self):
         pass
 
-    ###################################
-    # SEARCHING AND DISPLAYING TOPICS #
-    ###################################
-    def find_topic_options(self, topic):
-        return _search_topics._find_topic_options(self, topic)
+    # ###################################
+    # # SEARCHING AND DISPLAYING TOPICS #
+    # ###################################
+    # def find_topic_options(self, topic):
+    #     return _search_topics._find_topic_options(self, topic)
 
-    def render_topic_options(self):
-        _search_topics._render_topic_options(self)
+    # def render_topic_options(self):
+    #     _search_topics._render_topic_options(self)
 
-    def find_subtopics(self, chosen_topic):
-        return _search_topics._find_subtopics(self, chosen_topic)
+    # def find_subtopics(self, chosen_topic):
+    #     return _search_topics._find_subtopics(self, chosen_topic)
 
     ####################################
     # PRINTING & HANDLING OF QUESTIONS #
@@ -357,6 +349,15 @@ class App:
             self.sprit_group_riddler.draw(self.display_surf)
 
         if self.menupage:
+            # TODO: this needs to be better
+            # Check if the questions are generated
+            try:
+                poll = self.quest_gen.poll()
+                if poll is not None:
+                    self.status = 'questions_generated'
+            except:
+                # print('wrong')
+                pass
 
             self.display_surf.fill(self.colors["bg_color"])
 
@@ -430,8 +431,8 @@ class App:
                     self.riddler_text_string2 = "interesting topics!"
 
                 elif self.status == 'topic_chosen':
-                    self.riddler_text_string1 = "I got a good one!"
-                    self.riddler_text_string2 = "This will be epic!"
+                    self.riddler_text_string1 = "Let me think of"
+                    self.riddler_text_string2 = "some questions!"
 
                 elif self.status == 'no_topics_found':
                     self.riddler_text_string1 = "That's gibberish!"
@@ -452,7 +453,14 @@ class App:
         pygame.display.update()
 
     def render_text(self, string, x, y, colour):  # self.colors["buttontext"]
+        """Small function to render text on screen in pygame
 
+        Args:
+            string (string): text to be put on screen
+            x (int): x coordinate
+            y (int): y coordinate
+            colour (dict entry): colour of the button/text
+        """
         text = self.mousefont.render(
             string, True, colour)
         rect = text.get_rect(center=(x, y))
