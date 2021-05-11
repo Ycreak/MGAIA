@@ -502,7 +502,7 @@ class App:
             try:
                 poll = self.quest_gen.poll()
                 if poll is not None:
-]                    self.status = 'questions_generated'
+                    self.status = 'questions_generated'
             except:
                 # print('wrong')
                 pass
