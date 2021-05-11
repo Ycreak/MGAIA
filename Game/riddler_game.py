@@ -64,9 +64,23 @@ class App:
         pygame.init()
         pygame.display.set_caption('Riddler Game')
         pygame.display.set_icon(self.logo)
-        self.clock = pygame.time.Clock()
 
+        # pygame internal state
+        self.clock = pygame.time.Clock()
+        self.mouse = pygame.mouse.get_pos()
+
+        # fonts
         input_font = pygame.font.Font(None, 32)
+        self.smallfont = pygame.font.SysFont('Corbel', 35)
+        self.display_surf = pygame.display.set_mode(
+            self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.smallfont = pygame.font.SysFont('Corbel', 35)
+        self.questionfont = pygame.font.SysFont('Corbel', 25)
+        self.bigfont = pygame.font.SysFont('Corbel', 70)
+        self.tinyfont = pygame.font.SysFont('Corbel', 30)
+        self.mousefont = pygame.font.SysFont('Corbel', 20)
+
+        # input boxes
         self.answer_input_box = InputBox(self.positions["input_box"],
                                          self.colors["inputinactive"],
                                          self.colors["inputactive"],
@@ -77,33 +91,23 @@ class App:
                                         self.colors["inputactive"],
                                         input_font)
 
-        self.smallfont = pygame.font.SysFont('Corbel', 35)
-        self.display_surf = pygame.display.set_mode(
-            self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-        self.smallfont = pygame.font.SysFont('Corbel', 35)
-        self.questionfont = pygame.font.SysFont('Corbel', 25)
-        self.bigfont = pygame.font.SysFont('Corbel', 70)
-
-        self.tinyfont = pygame.font.SysFont('Corbel', 30)
-        self.mousefont = pygame.font.SysFont('Corbel', 20)
-
-        self.mouse = pygame.mouse.get_pos()
-
+        # q&a utility
         self.no_more_questions = False
         self.questions_answers_database = pd.read_csv(self.csv_name, sep=',')
         self.answers_displayed_questions = []
         self.game_answer = self.questions_answers_database['topic'].iloc[0]
         self.questions_answers_displayed = []
 
+        # gamestate
         self.score = 6
         self.topic = ''
         self.status = 'welcome'
-
-        self.add_question()
-
         self.player_won = False
         self.given_up = False
         self._running = True
+
+        self.add_question()
+
         return True
 
     def on_event(self, event):
@@ -126,6 +130,16 @@ class App:
 
                 self.add_question()
                 self.on_render()
+
+            # buy answer button
+            if self.positions["answer_button"][0][0] <= self.mouse[0] <= self.positions["answer_button"][0][1] and\
+                    self.positions["answer_button"][1][0] <= self.mouse[1] <= self.positions["answer_button"][1][1]:
+
+                # TODO buy question handler
+                print("clicked question")
+                self.status = 'buy_question'
+                self.on_render()
+
             if self.positions["menu_button"][0][0] <= self.mouse[0] <= self.positions["menu_button"][0][1] and self.positions["menu_button"][1][0] <= self.mouse[1] <= self.positions["menu_button"][1][1]:
                 print('inside menu')
                 self.gamepage = False
@@ -290,6 +304,15 @@ class App:
             # question button
             self.render_button(self.positions["question_button"],
                                "SHOW ANOTHER QUESTION",
+                               self.smallfont,
+                               self.colors["buttontext"],
+                               [30, 15],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+
+            # buy answer button
+            self.render_button(self.positions["answer_button"],
+                               "BUY AN ANSWER",
                                self.smallfont,
                                self.colors["buttontext"],
                                [30, 15],

@@ -20,8 +20,13 @@ def _render_questions(state, top_position):
         q = state.questionfont.render(
             question, True, state.colors["questiontext"])
 
-        a = state.questionfont.render(
-            answer, True, state.colors["answertext"])
+        if state.status == "buy_answer":
+            # TODO print score/price of answer
+            a = state.questionfont.render(
+            str(penalty), True, state.colors["answertext"])
+        else: 
+            a = state.questionfont.render(
+                answer, True, state.colors["answertext"])
         qa_rectangle = pygame.draw.rect(
             state.display_surf, state.colors["qabox"], [top_x, top_y, box_width, box_height], border_radius=5)
         a_rectangle = a.get_rect()

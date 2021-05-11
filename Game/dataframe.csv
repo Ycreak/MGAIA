@@ -1,9 +1,5 @@
 topic,question,answer,penalty
-Small pet,What are hamsters kept as?,household pets,0
-Small pet,What were rodents seen as in Western society?,vermin,0
-Small pet,What are hamsters?,pets,0
-Small pet,What is the most dominant mouse in a social hierarchy?,buck,0
-Small pet,What can recognize if another mouse is part of their family?,mice,0
-Small pet,What are the most common rodents kept as household pets?,guinea pigs,1
-Small pet,What are the most common rodents kept as household pets?,hamsters,1
-Small pet,What is the most common pet species?,hamsters,1
+Phodopus,What is missing from the genus?,fossils,0
+Phodopus,What are the three species of dwarf hamsters called?,hamsters,0
+Phodopus,"What are the members of Phodopus, Cricetulus, Allocricetulus and Tscherskia called?",hamsters,1
+Phodopus,What is the name of Phodopus campbelli?,thomas,1
