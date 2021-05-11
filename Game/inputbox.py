@@ -37,6 +37,9 @@ class InputBox():
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
+                    self.txt_surface = self.font.render(
+                        self.text, True, self.color)
+                    return self.text
                 # Re-render the text.
                 self.txt_surface = self.font.render(
                     self.text, True, self.color)

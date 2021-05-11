@@ -12,69 +12,23 @@ import json
 import urllib.parse
 from threading import Thread
 
+# class methods, moved to external files for clarity
+import _search_topics
+import _question_handling
+
+# colors, positions etc
+import style
+
 from answer_validation import answerIsValid
 from NLP.question_generator import Question_Generator
+from mysprite import MySprite
 
 
 # TODO resetting game when going to menu?
 # TODO: reset game when giving up?
 # TODO: check answer (rem) (also, what part should be acceptable? [string comparison]) SEE ANSWER_VALIDATION
 # TODO: find wikipedia URLs from a given topic (in the NLP code)
-# TODO: handler for topic input box (i mean what to do with the input of the textbox)
 # TODO: pressing enter for topic input maybe redundant?
-
-class MySprite(pygame.sprite.Sprite):
-    def __init__(self, image, x, y, w, h):
-        super(MySprite, self).__init__()
-        #adding all the images to sprite array
-        self.images = self.load_images(image)
-        
-        #index value to get the image from the array
-        #initially it is 0 
-        self.index = 0
-
-        #now the image that we will display will be the index from the image array 
-        self.image = self.images[math.floor(self.index)]
-
-        #creating a rect at position x,y (5,5) of size (150,198) which is the size of sprite 
-        self.rect = pygame.Rect(x,y,w,h)
-
-    def load_images(self, path):
-        """
-        Loads all images in directory. The directory must only contain images.
-
-        Args:
-            path: The relative or absolute path to the directory to load images from.
-
-        Returns:
-            List of images.
-        """
-        images = []
-        temp_list = []
-        for file_name in os.listdir(path):
-            temp_list.append(file_name)
-
-        temp_list = sorted(temp_list)
-
-        for file_name in temp_list:
-            image = pygame.image.load(path + os.sep + file_name)
-            image = pygame.transform.scale(image, (120, 150))
-            images.append(image)
-
-        return images
-
-    def update(self):
-        #when the update method is called, we will increment the index
-        self.index += 0.02
-
-        #if the index is larger than the total images
-        if self.index >= len(self.images):
-            #we will make the index to 0 again
-            self.index = 0
-        
-        #finally we will update the image that will be displayed
-        self.image = self.images[math.floor(self.index)]
-
 
 class App:
     def __init__(self):
@@ -85,44 +39,10 @@ class App:
         self.gamepage = False
 
         self.size = self.width, self.height = 1000, 700
-        self.colors = {"bg_color": (92, 219, 148),#(60, 25, 60),
-                       "color_light": (170, 170, 170),
-                       "color_dark": (5, 57, 107), # Button
-                       "buttontext": (255, 255, 255),
-                       "questiontext": (0, 0, 0),
-                       "answertext": (60, 25, 60),
-                       "qabox": (255, 255, 255),
-                       "warningtext": (255, 255, 255),
-                       "warningbox": (179, 58, 58),
-                       "victorytext": (255, 255, 255),
-                       "victorybox": (0, 183, 0),
-                       "inputactive": (246, 134, 133), # pygame.Color('dodgerblue2'),  # Text box
-                       "inputinactive": (246, 134, 133),# pygame.Color('lightskyblue3')}
-                       } 
+        self.colors = style.colors
+
         # x_left, x_right, y_top, y_bottom, width, height
-        self.positions = {"quit_button": [[5, 145], [5, 45], [140, 40]],
-                          "questions": [[5, self.width-5], [55, 85], [self.width-10, 30]],
-                          "menu_button": [[150, 150+140], [5, 45], [140, 40]],
-                          "giveup_button": [[self.width-150, self.width-10], [self.height-20-32-40, self.height-20-32], [140, 40]],
-                          "play_button": [[self.width-250, self.width-50], [self.height/3 - 50,  self.height/3 - 10], [200, 40]],
-                          "search_button": [[self.width-250, self.width-50], [self.height/3 - 100, self.height/3 - 60], [200, 40]],
-
-                          "topic_input_box":      [[self.width/2-440, self.width/2-240], [self.height/3 - 100, self.height/3 - 60],  [600, 40]],
-                          "topic_option_button0": [[self.width/2-440, self.width/2-240], [self.height/3 - 50,  self.height/3 - 10],  [600, 40]],
-                          "topic_option_button1": [[self.width/2-440, self.width/2-240], [self.height/3 - 0,   self.height/3 + 40],  [600, 40]],
-                          "topic_option_button2": [[self.width/2-440, self.width/2-240], [self.height/3 + 50,  self.height/3 + 90],  [600, 40]],
-                          "topic_option_button3": [[self.width/2-440, self.width/2-240], [self.height/3 + 100, self.height/3 + 140], [600, 40]],
-                          "topic_option_button4": [[self.width/2-440, self.width/2-240], [self.height/3 + 150, self.height/3 + 190], [600, 40]],
-                          "topic_option_button5": [[self.width/2-440, self.width/2-240], [self.height/3 + 200, self.height/3 + 240], [600, 40]],
-                          "topic_option_button6": [[self.width/2-440, self.width/2-240], [self.height/3 + 250, self.height/3 + 290], [600, 40]],
-                          "topic_option_button7": [[self.width/2-440, self.width/2-240], [self.height/3 + 300, self.height/3 + 340], [600, 40]],
-                          "topic_option_button8": [[self.width/2-440, self.width/2-240], [self.height/3 + 350, self.height/3 + 390], [600, 40]],
-                          "topic_option_button9": [[self.width/2-440, self.width/2-240], [self.height/3 + 400, self.height/3 + 440], [600, 40]],
-
-                          "input_box": [[self.width-510, self.width-10], [self.height-10-32, self.height-10], [500, 32]],
-                          "question_button": [[10, 410], [self.height-20-32-50, self.height-20-32], [400, 50]],
-                          "score": [[self.width-250, self.width-50], [5, 45], [140, 40]]
-                          }
+        self.positions = style._positions(self)
 
         self.csv_name = './NLP/dataframe.csv'
 
@@ -130,13 +50,14 @@ class App:
         self.sprit_group_riddler = pygame.sprite.Group(self.sprite_riddler)
 
         self.sprite_menu_riddler = MySprite('img/riddler', 700, 525, 10, 10)
-        self.sprit_group_menu_riddler = pygame.sprite.Group(self.sprite_menu_riddler)
+        self.sprit_group_menu_riddler = pygame.sprite.Group(
+            self.sprite_menu_riddler)
 
         self.logo = pygame.image.load("img/icon.png")
-        
+
         self.show_bubble = True
         self.img_bubble = pygame.image.load("img/bubble.png")
-        
+
         self.topic_options = []
 
     def on_init(self):
@@ -170,13 +91,13 @@ class App:
 
         self.no_more_questions = False
         self.questions_answers_database = pd.read_csv(self.csv_name, sep=',')
+        self.answers_displayed_questions = []
         self.game_answer = self.questions_answers_database['topic'].iloc[0]
         self.questions_answers_displayed = []
 
         self.score = 6
         self.topic = ''
         self.status = 'welcome'
-
 
         self.add_question()
 
@@ -221,7 +142,8 @@ class App:
                     self.positions["play_button"][1][0] <= self.mouse[1] <= self.positions["play_button"][1][1]:
                 self.gamepage = True
                 self.menupage = False
-                self.questions_answers_database = pd.read_csv(self.csv_name, sep=',')
+                self.questions_answers_database = pd.read_csv(
+                    self.csv_name, sep=',')
 
                 self.on_render()
             # search button
@@ -233,7 +155,7 @@ class App:
                     self.status = 'press_enter'
                     # TODO: put this on screen, maybe grey out button if no topic has yet been entered?
                 else:
-                    self.status = 'searching_topic'    
+                    self.status = 'searching_topic'
                     self.topic_options = self.find_topic_options(self.topic)
                     print("Topics found: ", self.topic_options)
 
@@ -248,7 +170,8 @@ class App:
                         self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1]:
                     chosen_topic = self.topic_options[i]
 
-                    print("Topic ", chosen_topic, " button pressed. You chose wisely!")
+                    print("Topic ", chosen_topic,
+                          " button pressed. You chose wisely!")
                     self.status = "topic_chosen"
 
                     self.subtopics = self.find_subtopics(chosen_topic)
@@ -260,7 +183,7 @@ class App:
                     current_subtopic = self.subtopics.pop()
 
                     print("Selected subtopic: ", current_subtopic)
-                    
+
                     # TODO: Now everything is Python3, this can just be an import
                     # subprocess.call(['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
                     Question_Generator(current_subtopic)
@@ -268,265 +191,45 @@ class App:
                     # thread.start()
                     # thread.join()
                     # print("thread finished...exiting")
-                    
+
                     # TODO: loading process or maybe a bar? Animation?
                     self.status = 'questions_generated'
                     print('all done!')
-
 
                     self.on_render()
 
     def on_loop(self):
         pass
 
+    ###################################
+    # SEARCHING AND DISPLAYING TOPICS #
+    ###################################
+    def find_topic_options(self, topic):
+        return _search_topics._find_topic_options(self, topic)
+
+    def render_topic_options(self):
+        _search_topics._render_topic_options(self)
+
+    def find_subtopics(self, chosen_topic):
+        return _search_topics._find_subtopics(self, chosen_topic)
+
     ####################################
     # PRINTING & HANDLING OF QUESTIONS #
     ####################################
     def render_questions(self, top_position):
-        top_x = top_position[0][0]
-        top_y = top_position[1][0]
-        box_width = top_position[2][0]
-        box_height = top_position[2][1]
-
-        v_fill = 10
-
-        for topic, question, answer, penalty in self.questions_answers_displayed:
-            text = "--".join([question, answer])
-            q = self.questionfont.render(
-                question, True, self.colors["questiontext"])
-
-            a = self.questionfont.render(
-                answer, True, self.colors["answertext"])
-            qa_rectangle = pygame.draw.rect(
-                self.display_surf, self.colors["qabox"], [top_x, top_y, box_width, box_height], border_radius=5)
-            a_rectangle = a.get_rect()
-            a_rectangle.right = top_position[0][1]-5
-            a_rectangle.top = top_y+2
-            self.display_surf.blit(q, (top_x+5, top_y+2))
-            self.display_surf.blit(a, a_rectangle)
-
-            top_y += v_fill + box_height
+        _question_handling._render_questions(self, top_position)
 
     def no_more_questions_handler(self):
-        warning = self.bigfont.render(
-            "NO MORE QUESTIONS LEFT", True, self.colors["warningtext"])
-        warning_rectangle = warning.get_rect()
-        warning_rectangle.width = 800
-        warning_rectangle.height = 200
-        warning_rectangle.center = (self.width/2, self.height/2)
-        warning_border = pygame.Rect(0, 0, 750, 150)
-        warning_border.center = warning_rectangle.center
-        pygame.draw.rect(self.display_surf,
-                         self.colors["warningbox"], warning_rectangle)
-        pygame.draw.rect(self.display_surf,
-                         self.colors["warningtext"], warning_border, 4)
-        self.display_surf.blit(warning, warning.get_rect(
-            center=(self.width/2, self.height/2)))
+        _question_handling._no_more_questions_handler(self)
 
     def add_question(self):
-        # check how many questions there are
-        if len(self.questions_answers_database.index) == 0:
-            self.no_more_questions = True
-            return
-        else:
-            idx = random.randint(
-                0, len(self.questions_answers_database.index)-1)
-            self.questions_answers_displayed.append(
-                self.questions_answers_database.iloc[0].tolist())  # Always pick the top question
-            self.questions_answers_database.drop(
-                [self.questions_answers_database.index[0]], inplace=True)
-            self.score = self.score - 1
+        _question_handling._add_question(self)
 
     def player_won_handler(self):
-        text = "VICTORY: " + self.game_answer.upper()
-        victory = self.bigfont.render(
-            text, True, self.colors["victorytext"])
-        victory_rectangle = victory.get_rect()
-        victory_rectangle.width = 800
-        victory_rectangle.height = 200
-        victory_rectangle.center = (self.width/2, self.height/2)
-        victory_border = pygame.Rect(0, 0, 750, 150)
-        victory_border.center = victory_rectangle.center
-        pygame.draw.rect(self.display_surf,
-                         self.colors["victorybox"], victory_rectangle)
-        pygame.draw.rect(self.display_surf,
-                         self.colors["victorytext"], victory_border, 4)
-        self.display_surf.blit(victory, victory.get_rect(
-            center=(self.width/2, self.height/2)))
+        _question_handling._player_won_handler(self)
 
     def give_up_handler(self):
-        answer_1 = self.bigfont.render(
-            "YOU LOST! ANSWER WAS: ", True, self.colors["warningtext"])
-        answer_2 = self.bigfont.render(
-            self.game_answer.upper(), True, self.colors["warningtext"])
-        answer_rectangle = answer_1.get_rect()
-        answer_rectangle.width = 900
-        answer_rectangle.height = 400
-        answer_rectangle.center = (self.width/2, self.height/2)
-        answer_border = pygame.Rect(0, 0, 850, 350)
-        answer_border.center = answer_rectangle.center
-        pygame.draw.rect(self.display_surf,
-                         self.colors["warningbox"], answer_rectangle)
-        pygame.draw.rect(self.display_surf,
-                         self.colors["warningtext"], answer_border, 4)
-        self.display_surf.blit(answer_1, answer_1.get_rect(
-            center=(self.width/2, self.height/2-40)))
-        self.display_surf.blit(answer_2, answer_2.get_rect(
-            center=(self.width/2, self.height/2+40)))
-
-    ###################################
-    # SEARCHING AND DISPLAYING TOPICS #
-    ###################################
-
-    def find_topic_options(self, topic):
-        possible_options = wikipedia.search(topic)
-        options = []
-
-        for option in possible_options:
-            #Lists are not very usefull
-            if "List of " in option:
-                continue
-
-            #Disambiguation pages are useless
-            if "disambiguation" in option:
-                continue
-
-            options.append(option)
-
-        return options
-
-    def render_topic_options(self):
-        i = 0
-
-        for option in self.topic_options:
-            buttonpos = "topic_option_button" + str(i)
-
-            if len(option) > 44:
-                option = option[:45] + "..."
-
-            self.render_button(self.positions[buttonpos],
-                               option, 
-                               self.smallfont,
-                               self.colors["buttontext"],
-                               [10, 10],
-                               self.colors["color_light"],
-                               self.colors["color_dark"])
-
-            i = i + 1
-
-    def find_subtopics(self, chosen_topic):
-        #The max number of pages for a certain topic 
-        number_of_pages = 10
-
-        #Get the url from the topic
-        chosen_topic_ = chosen_topic.replace(" ", "_")
-        chosen_topic_ = urllib.parse.quote(chosen_topic_)
-        chosen_topic_url = "https://en.wikipedia.org/wiki/" + chosen_topic_
-
-        #Get the first alinea from the Wikipedia page
-        topic_wiki_response = requests.get(chosen_topic_url)
-        topic_wiki_text = topic_wiki_response.text
-        topic_wiki_text_begin = topic_wiki_text.split('<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>')[1]
-        topic_wiki_text_end = topic_wiki_text_begin.split('id="toc"')[0]
-
-        #Get the links from the text
-        topic_wiki_links_begin = topic_wiki_text_end.split('<a href="/wiki/')
-
-        linked_pages = []
-
-        #Check for every link if it is usable
-        for link in topic_wiki_links_begin:
-            page_name_parts = link.split('"')
-
-            page_name = page_name_parts[0]
-
-            #No loops
-            if page_name == chosen_topic:
-                continue
-
-            #Wikipedia main page
-            if page_name == "Main_Page":
-                continue
-
-            #Lists are not very usefull
-            if "List_of_" in page_name:
-                continue
-
-            #Disambiguation pages are useless
-            if "disambiguation" in page_name:
-                continue
-
-            #Not a page but an paragraph on a page
-            if "#" in page_name:
-                continue
-
-            #Some Wikipedia specific pages
-            if "Wikipedia" in page_name:
-                continue
-
-            if "File:" in page_name:
-                continue
-
-            if "Special:" in page_name:
-                continue
-            
-            if "Category:" in page_name:
-                continue
-
-            if "Help:" in page_name:
-                continue
-
-            if "Talk:" in page_name:
-                continue
-
-            if "Portal:" in page_name:
-                continue
-
-            #The first part before any link is not a page
-            if "<div id=" in page_name:
-                continue
-            
-            linked_pages.append(page_name)
-
-        linked_pages_views = {}
-        relevant_pages = {}
-
-        #Get the pageviews for the linked pages
-        for linked_page in linked_pages[:200]:
-
-            linked_url = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/" + linked_page + "/monthly/20210401/20210430"
-
-            pageviews = requests.get(linked_url, headers={"User-Agent":"TopicBot"})
-            pageviews_text = json.loads(pageviews.text)
-
-            if "items" in pageviews_text:
-                linked_pages_views[linked_page] = pageviews_text["items"][0]["views"]
-
-        #Order the pages by view count
-        linked_pages_views_ordered = sorted(linked_pages_views.items(), key=lambda x: x[1], reverse=True)
-
-        index = 0
-        relevant_links = []
-
-        #We only need to check untill we have the amount of relevant pages we need
-        while len(relevant_pages) < number_of_pages and index < len(linked_pages_views_ordered):
-            linked_page = linked_pages_views_ordered[index]
-            linked_url = "https://en.wikipedia.org/wiki/" + linked_page[0]
-            
-            #Get the first alinea from the Wikipedia page
-            linked_response = requests.get(linked_url)
-            linked_text = linked_response.text
-            linked_begin = linked_text.split('<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>')[1]
-            linked_end = linked_begin.split('id="toc"')[0]
-
-            #If the topic is named in the text the page is really relevant
-            if chosen_topic_ in linked_end or chosen_topic in linked_end:
-                relevant_pages[linked_page[0]] = linked_page[1]
-                relevant_links.append(linked_url)
-
-            index = index + 1
-
-        return relevant_links
+        _question_handling._give_up_handler(self)
 
     ######################
     # ANIMATION HANDLING #
@@ -559,8 +262,6 @@ class App:
                 "GUESS THE SUBJECT", True, self.colors["buttontext"])
             title_rectangle = title.get_rect(center=(self.width/2, 20))
             self.display_surf.blit(title, title_rectangle)
-
-
 
             # BUTTONS
             # quit button
@@ -631,7 +332,6 @@ class App:
             # Animations
             self.sprit_group_riddler.update()
             self.sprit_group_riddler.draw(self.display_surf)
-
 
         if self.menupage:
 
@@ -720,16 +420,18 @@ class App:
 
                 self.display_surf.blit(self.img_bubble, (775, 425))
 
-                self.render_text(self.riddler_text_string1, 850, 470, self.colors["buttontext"])
-                self.render_text(self.riddler_text_string2, 850, 490, self.colors["buttontext"])
-            
+                self.render_text(self.riddler_text_string1, 850,
+                                 470, self.colors["buttontext"])
+                self.render_text(self.riddler_text_string2, 850,
+                                 490, self.colors["buttontext"])
+
         # update display
         pygame.display.update()
 
-    def render_text(self, string, x, y, colour): #self.colors["buttontext"]
+    def render_text(self, string, x, y, colour):  # self.colors["buttontext"]
 
         text = self.mousefont.render(
-        string, True, colour)
+            string, True, colour)
         rect = text.get_rect(center=(x, y))
         self.display_surf.blit(text, rect)
 
@@ -752,7 +454,6 @@ class App:
                     self.player_won = True
 
                 # topic input box
-                # TODO handler for input of this box
                 topic_input = self.topic_input_box.handle_event(event)
                 # print(topic_input)
                 if topic_input != None:
