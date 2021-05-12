@@ -103,6 +103,15 @@ class App:
 
         return True
 
+    def reload_question_database(self):
+        self.questions_answers_database = pd.read_csv(
+            self.csv_name, sep=',')
+
+        self.answers_displayed_questions = []
+        self.questions_answers_displayed = []
+        self.game_answer = self.questions_answers_database['topic'].iloc[0]
+        self.add_question()
+
     def on_event(self, event):
         if event.type == pygame.QUIT:
             self._running = False
@@ -158,8 +167,7 @@ class App:
                     self.positions["play_button"][1][0] <= self.mouse[1] <= self.positions["play_button"][1][1]:
                 self.gamepage = True
                 self.menupage = False
-                self.questions_answers_database = pd.read_csv(
-                    self.csv_name, sep=',')
+                self.reload_question_database()
 
                 self.on_render()
             # search button
