@@ -9,6 +9,8 @@ colors = {"bg_color": (92, 219, 148),  # (60, 25, 60),
           "warningbox": (179, 58, 58),
           "victorytext": (255, 255, 255),
           "victorybox": (0, 183, 0),
+          "green": (124,252,0),
+          "red": (255,0,0),
           # pygame.Color('dodgerblue2'),  # Text box
           "inputactive": (246, 134, 133),
           # pygame.Color('lightskyblue3')}
