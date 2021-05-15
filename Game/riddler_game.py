@@ -51,6 +51,7 @@ class App:
         self.img_bubble = pygame.image.load("img/bubble.png")
 
         self.topic_options = []
+        self.small_options = []
 
     def on_init(self):
         pygame.init()
@@ -199,28 +200,36 @@ class App:
                 for i in range(0, len(self.topic_options)):
                     button_name = "topic_option_button" + str(i)
                     if self.positions[button_name][0][0] <= self.mouse[0] <= self.positions[button_name][0][1] and\
-                            self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1]:
+                            self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1] and\
+                            self.topic_options[i] not in self.small_options:
                         chosen_topic = self.topic_options[i]
 
                         # We now pressed a topic. Find a related topic to ask questions about
                         print("Topic ", chosen_topic,
-                              " button pressed. You chose wisely!")
+                              " button pressed.")
+
                         self.status = "topic_chosen"
 
                         self.subtopics = tf.find_subtopics(chosen_topic)
 
                         print(self.subtopics)
 
-                        random.shuffle(self.subtopics)
+                        if len(self.subtopics) > 1:
+                            print("Topic is large enough. You chose wisely!")
 
-                        current_subtopic = self.subtopics.pop()
+                            random.shuffle(self.subtopics)
 
-                        print("Selected subtopic: ", current_subtopic)
+                            current_subtopic = self.subtopics.pop()
 
-                        # TODO: Now everything is Python3, this can just be an import
-                        self.quest_gen = subprocess.Popen(
-                            ['python3', 'q2.py', current_subtopic], cwd="NLP/")
+                            print("Selected subtopic: ", current_subtopic)
 
+                            # TODO: Now everything is Python3, this can just be an import
+                            self.quest_gen = subprocess.Popen(
+                                ['python3', 'q2.py', current_subtopic], cwd="NLP/")
+                        else:
+                            print("Topic is too small. You chose poorly!")
+                            self.status = "searching_topic"
+                            self.small_options.append(chosen_topic)
                         self.on_render()
 
     def on_loop(self):
@@ -268,18 +277,28 @@ class App:
         i = 0
 
         for option in self.topic_options:
+
+            color_light = "color_light"
+            color_dark = "color_dark"
+            name = option
+
+            if option in self.small_options:
+                color_light = "warningbox"
+                color_dark = "warningbox"
+                name = "This topic contains not enough subtopics."
+
             buttonpos = "topic_option_button" + str(i)
 
-            if len(option) > 44:
-                option = option[:45] + "..."
+            if len(name) > 44:
+                name = name[:45] + "..."
 
             self.render_button(self.positions[buttonpos],
-                               option,
+                               name,
                                self.smallfont,
                                self.colors["buttontext"],
                                [10, 10],
-                               self.colors["color_light"],
-                               self.colors["color_dark"])
+                               self.colors[color_light],
+                               self.colors[color_dark])
 
             i = i + 1
 
