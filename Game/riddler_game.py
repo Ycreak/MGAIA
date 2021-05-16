@@ -551,7 +551,7 @@ class App:
 
                 # answer input box
                 answer = self.answer_input_box.handle_event(event)
-                if answer != None and answerIsValid(answer, self.game_answer):
+                if answer != None and len(answer) > 0 and answerIsValid(answer, self.game_answer):
                     self.player_won = True
 
                 # topic input box
