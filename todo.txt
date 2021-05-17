@@ -16,7 +16,7 @@ PYGAME RELATED
 
 	(Julia/Elise)	At Play Game button, reread dataframe
 	
-	(Julia/Elise) Ability to return from NO MORE QUESTION screen (and others)
+	IMPORTANT (Julia/Elise) Ability to return from NO MORE QUESTION screen (and others)
 
 	(Julia/Elise) At end of game: possibility to restart: continue in topic, or just restart entire game.
 
@@ -45,7 +45,7 @@ POLISH RELATED
 
 QUESTIONS
 	
-
+	Let me press play without loading questions
 
 
 

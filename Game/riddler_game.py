@@ -27,8 +27,8 @@ class App:
         self._running = True
         self.display_surf = None
 
-        self.menupage = True
-        self.gamepage = False
+        self.menupage = False
+        self.gamepage = True
 
         self.size = self.width, self.height = 1000, 700
         self.colors = style.colors
@@ -38,12 +38,13 @@ class App:
 
         self.csv_name = './NLP/dataframe.csv'
 
-        self.sprite_riddler = MySprite('img/riddler', 30, 440, 10, 10)
-        self.sprit_group_riddler = pygame.sprite.Group(self.sprite_riddler)
+        self.sprite_sphinx_money = pygame.sprite.Group(MySprite('img/sphinx/money', 30, 450, 10, 10))
+        self.sprite_sphinx_talk = pygame.sprite.Group(MySprite('img/sphinx/talk', 30, 450, 10, 10))
+        self.sprite_sphinx_winning = pygame.sprite.Group(MySprite('img/sphinx/winning', 30, 450, 10, 10))
+        self.sprite_sphinx_wrong = pygame.sprite.Group(MySprite('img/sphinx/wrong', 30, 450, 10, 10))
 
         self.sprite_menu_riddler = MySprite('img/riddler', 700, 525, 10, 10)
-        self.sprit_group_menu_riddler = pygame.sprite.Group(
-            self.sprite_menu_riddler)
+        self.sprite_group_menu_riddler = pygame.sprite.Group(self.sprite_menu_riddler)
 
         self.logo = pygame.image.load("img/icon.png")
 
@@ -99,6 +100,7 @@ class App:
         self.player_won = False
         self.given_up = False
         self._running = True
+        self.buying_answer = False
 
         self.add_question()
 
@@ -140,6 +142,9 @@ class App:
             if self.positions["answer_button"][0][0] <= self.mouse[0] <= self.positions["answer_button"][0][1] and\
                     self.positions["answer_button"][1][0] <= self.mouse[1] <= self.positions["answer_button"][1][1] and\
                     self.gamepage:
+
+                # Let the game know we are buying answers
+                self.buying_answer = not self.buying_answer
 
                 # TODO buy question handler
                 if self.question_status == "default":
@@ -402,18 +407,36 @@ class App:
 
             if self.no_more_questions:
                 self.no_more_questions_handler()
-
+                self.sprite_sphinx_wrong.update
+                self.sprite_sphinx_wrong.draw(self.display_surf)
             # VICTORY
-            if self.player_won:
+            elif self.player_won:
                 self.player_won_handler()
-
+                self.sprite_sphinx_winning.update
+                self.sprite_sphinx_winning.draw(self.display_surf)
             # GIVE UP
-            if self.given_up:
+            elif self.given_up:
                 self.give_up_handler()
+                self.sprite_sphinx_wrong.update
+                self.sprite_sphinx_wrong.draw(self.display_surf)
+            elif self.buying_answer:
+                print('i am here')
+                # self.sprite_sphinx_money.update
+                # self.sprite_sphinx_money.draw(self.display_surf)
+                self.sprite_sphinx_talk.update()
+                self.sprite_sphinx_talk.draw(self.display_surf)
 
-            # Animations
-            self.sprit_group_riddler.update()
-            self.sprit_group_riddler.draw(self.display_surf)
+                # print(self.sprite_sphinx_money.index)
+
+                        # Animations
+            else:
+                # self.sprite_sphinx_talk.update()
+                # self.sprite_sphinx_talk.draw(self.display_surf)
+                self.sprite_sphinx_winning.update
+                self.sprite_sphinx_winning.draw(self.display_surf)
+
+
+            print(self.buying_answer, 'hello')
 
         if self.menupage:
             # TODO: this needs to be better
@@ -471,8 +494,8 @@ class App:
                 self.render_no_topic_found()
 
             # Draw the riddler
-            self.sprit_group_menu_riddler.update()
-            self.sprit_group_menu_riddler.draw(self.display_surf)
+            self.sprite_group_menu_riddler.update()
+            self.sprite_group_menu_riddler.draw(self.display_surf)
 
             # Draw its speech bubble
             if self.show_bubble:
