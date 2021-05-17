@@ -421,16 +421,11 @@ class App:
                 self.sprite_sphinx_wrong.update()
                 self.sprite_sphinx_wrong.draw(self.display_surf)
             elif self.buying_answer:
-                # self.sprite_sphinx_money.update
-                # self.sprite_sphinx_money.draw(self.display_surf)
+                self.sprite_sphinx_money.update()
+                self.sprite_sphinx_money.draw(self.display_surf)
+            else:
                 self.sprite_sphinx_talk.update()
                 self.sprite_sphinx_talk.draw(self.display_surf)
-            else:
-                # self.sprite_sphinx_talk.update()
-                # self.sprite_sphinx_talk.draw(self.display_surf)
-                self.sprite_sphinx_winning.update()
-                self.sprite_sphinx_winning.draw(self.display_surf)
-
 
 
         if self.menupage:
