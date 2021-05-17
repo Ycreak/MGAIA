@@ -14,50 +14,34 @@ SCORE RELATED
 
 PYGAME RELATED
 
-	(Luuk) Interesting menu settings
-		How many wikipedia pages from 1 topic?
-
-	(Julia/Elise) Game Mechanics
-		Showing only answers/questions
-		Buying answers to specific questions
-			It would be nice to only show questions and being able to buy answers by clicking them
-		How many questions do we show? 5? All?
+	(Julia/Elise)	At Play Game button, reread dataframe
 	
-	(Luuk) Better menu design
-		Title
-		Colour
-		Instructions
+	(Julia/Elise) Ability to return from NO MORE QUESTION screen (and others)
 
-	(Luuk) Animations
-		Loading bar
-		Computer player
+	(Julia/Elise) At end of game: possibility to restart: continue in topic, or just restart entire game.
 
-	(Luuk) Topic Button
-		No pressing enter requirement -> no enter
+	(Luuk) Fix Unrelated questions bug
 
-	(Luuk) Overall
-		Better colour scheme
-		Restart button
-		Kinder end game texts
+	(Luuk) Show Sphinx lower left corner
+
 
 NLP RELATED
+
+	(Job) Show no topic found warning
+
+	(Job) Feed NLP per line (or max 3 lines) for better question generation
 
 	(Philippe) Penalty system more interesting/extensive
 	(Philippe) Answer validation
 
-	(Job) Convert topic to Wikipedia URL
+	(Luuk) Remove questions that are too long?
 
-NEW PROBLEMS
+	Display metrics
 
-	Show no topic warning
-	
-	At Play Game, reread dataframe
+POLISH RELATED
+	(Job) Topic buttons only clickable on left side
 
-	Ability to return from NO MORE QUESTION screen (and others)
-
-	Feed NLP per line (or max 3 lines) for better question generation
-
-	Topic buttons only left clickable
+	(Luuk) No more questions popup (buy answer)
 
 QUESTIONS
 	

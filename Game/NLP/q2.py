@@ -82,36 +82,44 @@ text = re.sub(r'\[.*?\]+', '', text)
 text = text.replace('\n', '')
 
 # Hack to generate more questions
-text1 = text.split()[0:500]
-text2 = text.split()[500:1000]
+text_splitted = text.split()
 
-text1 = ' '.join([str(elem) for elem in text1])
-text2 = ' '.join([str(elem) for elem in text2])
+print("This is really the new one")
 
-payload = { "input_text": text1 }
+previous_split = 100
+while not text_splitted[previous_split][-1] == ".":
+        previous_split = previous_split + 1
+previous_split = previous_split + 1
+split_point = previous_split + 50
 
-# Run the model
-# qg = main.QGen()
-output = qg.predict_shortq(payload)
-pprint(output)
+while len(df) < 10:
+    while not text_splitted[split_point-1][-1] == ".":
+        split_point = split_point + 1
 
-# Save the output        
-for item in output['questions']:
-    # print(item)
-    print(item['Question'], item['Answer'])
-    new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
-    df = df.append(new_line, ignore_index=True)
+    text1 = text_splitted[previous_split:split_point]
 
-payload = { "input_text": text2 }
+    print(text1)
 
-output = qg.predict_shortq(payload)
-pprint(output)
-        
-for item in output['questions']:
-    # print(item)
-    print(item['Question'], item['Answer'])
-    new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
-    df = df.append(new_line, ignore_index=True)
+    text1 = ' '.join([str(elem) for elem in text1])
+
+    payload = { "input_text": text1 }
+
+    # Run the model
+    qg = main.QGen()
+    output = qg.predict_shortq(payload)
+    pprint(output)
+
+    # Save the output
+
+    if len(output) > 0:    
+        for item in output['questions']:
+            if len(item['Question']) < 100:
+                print(item['Question'], item['Answer'])
+                new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
+                df = df.append(new_line, ignore_index=True)
+
+    previous_split = split_point
+    split_point = split_point + 50
 
 # Now check the dataframe for proper answers
 df["penalty"] = 0
@@ -119,6 +127,7 @@ df["penalty"] = 0
 for i in range(len(df)):
     
     q = df["question"][i].lower()
+    a = df["answer"][i].lower()
 
     # q = ''.join(ch for ch in q if not ch.isupper())
     
@@ -127,8 +136,12 @@ for i in range(len(df)):
         if word in q:
             print(q, 'contains', word)
             df["penalty"][i] += 1
+        if word in a:
+            print(a, 'contains', word)
+            df["penalty"][i] += 1
 
 df = df.sort_values(by=['penalty'])
+df = df[:8]
 print(df)
 df.to_csv('dataframe.csv', index = False, header=True)
 

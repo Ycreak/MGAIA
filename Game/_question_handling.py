@@ -13,28 +13,34 @@ def _answer_buying_event_handler(state, top_position):
     top_y = top_position[1][0]
     box_width = top_position[2][0]
     box_height = top_position[2][1]
-
+    already_bought = -1
     v_fill = 10
 
     for box_id in range(len(state.questions_answers_displayed)):
         if top_x <= state.mouse[0] <= top_x+box_width and\
                 top_y <= state.mouse[1] <= box_height+top_y:
             price = state.questions_answers_displayed[box_id][3]
+            if state.questions_answers_displayed[box_id][2] != '':
+                already_bougth = True
+            else:
+                already_bought = False
             if price <= state.score:
-                return box_id, price
+                return box_id, price, already_bought
 
         top_y += v_fill + box_height
-    return -1, -1
+    return -1, -1, -1
 
 
 def _buy_answer(state):
-    answer_id, price = _answer_buying_event_handler(
+    answer_id, price, question_already_bought = _answer_buying_event_handler(
         state, state.positions["questions"])
+    price = 1
     if answer_id != -1:
-        # bought a question
-        state.score -= price
-        state.questions_answers_displayed[answer_id][2] = state.answers_displayed_questions[answer_id]
-        state.question_status = "default"
+        if not question_already_bought:
+            # bought a question
+            state.score -= price
+            state.questions_answers_displayed[answer_id][2] = state.answers_displayed_questions[answer_id]
+            state.question_status = "default"
 
 
 def _render_questions(state, top_position):
@@ -49,21 +55,49 @@ def _render_questions(state, top_position):
         text = "--".join([question, answer])
         q = state.questionfont.render(
             question, True, state.colors["questiontext"])
+        
+        if state.question_status == "buy_answer": # if we are in the 'buy answer' mode
+            
+            if answer != '': # this has to be: if question is already bought
+                a = state.questionfont.render(answer, True, state.colors["answertext"]) #+str(penalty), True, state.colors["answertext"])
+                qa_rectangle = pygame.draw.rect(
+                    state.display_surf, state.colors["red"], [top_x, top_y, box_width, box_height], border_radius=5)
+                a_rectangle = a.get_rect()
+                a_rectangle.right = top_position[0][1]-5
+                a_rectangle.top = top_y+2
+                state.display_surf.blit(q, (top_x+5, top_y+2))
+                state.display_surf.blit(a, a_rectangle)
+                
+            elif answer == '' and state.score > 1: # player has not bought this question and he can buy it because score is high enough
+                a = state.questionfont.render("PRICE = 1", True, state.colors["answertext"])
+                qa_rectangle = pygame.draw.rect(
+                    state.display_surf, state.colors["green"], [top_x, top_y, box_width, box_height], border_radius=5)
+                a_rectangle = a.get_rect()
+                a_rectangle.right = top_position[0][1]-5
+                a_rectangle.top = top_y+2
+                state.display_surf.blit(q, (top_x+5, top_y+2))
+                state.display_surf.blit(a, a_rectangle)
+             
+            else: #answer is not bought yet but player has no money
+                a = state.questionfont.render("PRICE = 1", True, state.colors["answertext"])
+                qa_rectangle = pygame.draw.rect(
+                    state.display_surf, state.colors["red"], [top_x, top_y, box_width, box_height], border_radius=5)
+                a_rectangle = a.get_rect()
+                a_rectangle.right = top_position[0][1]-5
+                a_rectangle.top = top_y+2
+                state.display_surf.blit(q, (top_x+5, top_y+2))
+                state.display_surf.blit(a, a_rectangle)
 
-        if state.question_status == "buy_answer":
-            # TODO print score/price of answer
-            a = state.questionfont.render("PRICE = " +
-                                          str(penalty), True, state.colors["answertext"])
-        else:
+        else: # if we are just looking at the questions and answers
             a = state.questionfont.render(
                 answer, True, state.colors["answertext"])
-        qa_rectangle = pygame.draw.rect(
+            qa_rectangle = pygame.draw.rect(
             state.display_surf, state.colors["qabox"], [top_x, top_y, box_width, box_height], border_radius=5)
-        a_rectangle = a.get_rect()
-        a_rectangle.right = top_position[0][1]-5
-        a_rectangle.top = top_y+2
-        state.display_surf.blit(q, (top_x+5, top_y+2))
-        state.display_surf.blit(a, a_rectangle)
+            a_rectangle = a.get_rect()
+            a_rectangle.right = top_position[0][1]-5
+            a_rectangle.top = top_y+2
+            state.display_surf.blit(q, (top_x+5, top_y+2))
+            state.display_surf.blit(a, a_rectangle)
 
         top_y += v_fill + box_height
 
@@ -142,3 +176,4 @@ def _give_up_handler(state):
         center=(state.width/2, state.height/2-40)))
     state.display_surf.blit(answer_2, answer_2.get_rect(
         center=(state.width/2, state.height/2+40)))
+
