@@ -46,12 +46,10 @@ class MySprite(pygame.sprite.Sprite):
 
     def update(self):
         # when the update method is called, we will increment the index
-        print('index:', self.index)
         self.index += 0.02
 
         # if the index is larger than the total images
         if self.index >= len(self.images):
-            print(self.index, 'time for next icon')
             # we will make the index to 0 again
             self.index = 0
 

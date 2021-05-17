@@ -100,6 +100,7 @@ class App:
         self.player_won = False
         self.given_up = False
         self._running = True
+
         self.buying_answer = False
 
         self.add_question()
@@ -407,36 +408,30 @@ class App:
 
             if self.no_more_questions:
                 self.no_more_questions_handler()
-                self.sprite_sphinx_wrong.update
+                self.sprite_sphinx_wrong.update()
                 self.sprite_sphinx_wrong.draw(self.display_surf)
             # VICTORY
             elif self.player_won:
                 self.player_won_handler()
-                self.sprite_sphinx_winning.update
+                self.sprite_sphinx_winning.update()
                 self.sprite_sphinx_winning.draw(self.display_surf)
             # GIVE UP
             elif self.given_up:
                 self.give_up_handler()
-                self.sprite_sphinx_wrong.update
+                self.sprite_sphinx_wrong.update()
                 self.sprite_sphinx_wrong.draw(self.display_surf)
             elif self.buying_answer:
-                print('i am here')
                 # self.sprite_sphinx_money.update
                 # self.sprite_sphinx_money.draw(self.display_surf)
                 self.sprite_sphinx_talk.update()
                 self.sprite_sphinx_talk.draw(self.display_surf)
-
-                # print(self.sprite_sphinx_money.index)
-
-                        # Animations
             else:
                 # self.sprite_sphinx_talk.update()
                 # self.sprite_sphinx_talk.draw(self.display_surf)
-                self.sprite_sphinx_winning.update
+                self.sprite_sphinx_winning.update()
                 self.sprite_sphinx_winning.draw(self.display_surf)
 
 
-            print(self.buying_answer, 'hello')
 
         if self.menupage:
             # TODO: this needs to be better
