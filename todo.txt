@@ -14,38 +14,34 @@ SCORE RELATED
 
 PYGAME RELATED
 
+	(ALL) we need to add some comments to the code! :D (it is very bare now)
+
 	(Julia/Elise)	At Play Game button, reread dataframe
 	
-	IMPORTANT (Julia/Elise) Ability to return from NO MORE QUESTION screen (and others)
-
-	(Julia/Elise) At end of game: possibility to restart: continue in topic, or just restart entire game.
-
-	(Luuk) Fix Unrelated questions bug
-
-	(Luuk) Show Sphinx lower left corner
-
-
-NLP RELATED
-
-	(Job) Show no topic found warning
-
-	(Job) Feed NLP per line (or max 3 lines) for better question generation
-
-	(Philippe) Penalty system more interesting/extensive
-	(Philippe) Answer validation
-
-	(Luuk) Remove questions that are too long?
-
-	Display metrics
-
-POLISH RELATED
-	(Job) Topic buttons only clickable on left side
-
-	(Luuk) No more questions popup (buy answer)
-
-QUESTIONS
+	IMPORTANT (Julia/Elise) Ability to reset win/lost/questions dialogue
+		Reset score after resetting game
 	
-	Let me press play without loading questions
+	(Job) Let me press play without loading questions
+
+	(Luuk) After generating new questions, old dataframe is loaded? (Windows)
+
+	(Julia) New screenshots
+
+PRESENTATION
+	Menu
+		Topic generation
+		Question generation	
+			PCG
+			
+		In game:
+			More questions
+			Buy answers (green, red)
+			Give up
+			Winning
+			Answer validation
+
+
+
 
 
 
