@@ -27,8 +27,8 @@ class App:
         self._running = True
         self.display_surf = None
 
-        self.menupage = False
-        self.gamepage = True
+        self.menupage = True
+        self.gamepage = False
 
         self.size = self.width, self.height = 1000, 700
         self.colors = style.colors
@@ -207,7 +207,14 @@ class App:
                 self.gamepage = True
                 self.menupage = False
                 self.reload_question_database()
-
+                self.on_render()
+            # return button
+            if self.positions["return"][0][0] <= self.mouse[0] <= self.positions["return"][0][1] and\
+                    self.positions["return"][1][0] <= self.mouse[1] <= self.positions["return"][1][1] and\
+                    self.menupage:
+                self.gamepage = True
+                self.menupage = False
+                #self.reload_question_database()
                 self.on_render()
             # search button
             if self.positions["search_button"][0][0] <= self.mouse[0] <= self.positions["search_button"][0][1] and\
@@ -478,6 +485,14 @@ class App:
             # Topic button
             self.render_button(self.positions["search_button"],
                                "SEARCH", self.smallfont,
+                               self.colors["buttontext"],
+                               [25, 10],
+                               self.colors["color_light"],
+                               self.colors["color_dark"])
+
+            #Return button
+            self.render_button(self.positions["return"],
+                               "RETURN", self.smallfont,
                                self.colors["buttontext"],
                                [25, 10],
                                self.colors["color_light"],
