@@ -84,23 +84,17 @@ text = text.replace('\n', '')
 # Hack to generate more questions
 text_splitted = text.split()
 
-print("This is really the new one")
-
 previous_split = 100
 while not text_splitted[previous_split][-1] == ".":
         previous_split = previous_split + 1
 previous_split = previous_split + 1
 split_point = previous_split + 50
 
-# sys.exit(1)
-
-while len(df) < 10:
+while len(df) < 10 and split_point < len(text_splitted):
     while not text_splitted[split_point-1][-1] == ".":
         split_point = split_point + 1
 
     text1 = text_splitted[previous_split:split_point]
-
-    print(text1)
 
     text1 = ' '.join([str(elem) for elem in text1])
 
@@ -122,6 +116,9 @@ while len(df) < 10:
 
     previous_split = split_point
     split_point = split_point + 50
+
+if split_point >= len(text_splitted):
+    sys.exit(1)
 
 # Now check the dataframe for proper answers
 df["penalty"] = 0
