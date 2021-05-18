@@ -4,6 +4,7 @@ from inputbox import InputBox
 import pandas as pd
 import random
 import subprocess
+
 import os
 import math
 
@@ -16,7 +17,7 @@ import _question_handling
 import style
 
 from answer_validation import answerIsValid
-from NLP.question_generator import Question_Generator
+# from NLP.question_generator import Question_Generator
 from mysprite import MySprite
 
 import NLP.topic_finder as tf
@@ -231,7 +232,7 @@ class App:
 
                             # TODO: Now everything is Python3, this can just be an import
                             self.quest_gen = subprocess.Popen(
-                                ['python3', 'q2.py', current_subtopic], cwd="NLP/")
+                                ['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
                         else:
                             print("Topic is too small. You chose poorly!")
                             self.status = "searching_topic"
@@ -427,16 +428,17 @@ class App:
                 self.sprite_sphinx_talk.update()
                 self.sprite_sphinx_talk.draw(self.display_surf)
 
-
         if self.menupage:
             # TODO: this needs to be better
             # Check if the questions are generated
             try:
                 poll = self.quest_gen.poll()
                 if poll is not None:
-                    self.status = 'questions_generated'
+                    if poll == 0:
+                        self.status = 'questions_generated'
+                    else: 
+                        self.status = 'questions_wrong'
             except:
-                # print('wrong')
                 pass
 
             self.display_surf.fill(self.colors["bg_color"])
