@@ -1,9 +1,9 @@
 topic,question,answer,penalty
-DC Extended Universe,What was the name of the Justice League film that Warner Bros. had planned to be released in 2008?,dark knight,0
-DC Extended Universe,What is the name of the Aquaman (2018) movie?,aquaman,0
-DC Extended Universe,What is the name of the first Superman movie?,shazam,0
-DC Extended Universe,What is the name of the Superman series that will continue in 2021?,suicide squad,0
-DC Extended Universe,What was the name of the first Wonder Woman movie?,wonder woman,0
-DC Extended Universe,Who directed Justice League?,zack snyder,0
-DC Extended Universe,Who did Warner Bros. start building a shared universe to compete with in 2011?,marvel studios,1
-DC Extended Universe,What is the DCEU's director's cut of Justice League?,justice league,1
+Complex system,What do nodes represent to their interactions?,links,0
+Complex system,What is the study of spontaneous order from?,social sciences,0
+Complex system,What do the nodes represent in a system?,components,1
+Complex system,What do nodes represent and link to in a complex system?,interactions,2
+Complex system,What is complex systems?,term,2
+Complex system,What is the study of complex systems from biology?,adaptation,2
+Complex system,What is the broad term for complex systems?,computer science,2
+Complex system,What is the most complex system in the world?,meteorology,2

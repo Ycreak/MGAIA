@@ -49,5 +49,6 @@ def _positions(state):
             "input_box": [[state.width-510, state.width-10], [state.height-10-32, state.height-10], [500, 32]],
             "question_button": [[10, 410], [state.height-20-32-50, state.height-20-32], [400, 50]],
             "answer_button": [[430, 830], [state.height-20-32-50, state.height-20-32], [400, 50]],
-            "score": [[state.width-250, state.width-50], [5, 45], [140, 40]]
+            "score": [[state.width-250, state.width-50], [5, 45], [140, 40]],
+            "return": [[855, 995], [5, 45], [140, 40]]
             }
