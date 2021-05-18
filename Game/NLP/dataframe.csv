@@ -1,9 +1,9 @@
 topic,question,answer,penalty
-Hamster,Who disagrees about the placement of the subfamily Cricetinae within the superfamily Muroidea?,taxonomists,0
-Hamster,"Along with voles and mice, what is another family of animals that are included in the Cricetidae?",lemmings,0
-Hamster,What is the name of the animal that is in the family Cricetidae?,voles,0
-Hamster,What is the only extinct member of the genus of Cricetus?,hamster,1
-Hamster,What is the only extant hamster of the genus Cricetus?,eurasia,1
-Hamster,What is the earliest genus Phodopus?,hamsters,1
-Hamster,What is the third major hamsters?,clade,1
-Hamster,What are the hamsters?,genera,1
+Complex system,What do nodes represent to their interactions?,links,0
+Complex system,What is the study of spontaneous order from?,social sciences,0
+Complex system,What do the nodes represent in a system?,components,1
+Complex system,What do nodes represent and link to in a complex system?,interactions,2
+Complex system,What is complex systems?,term,2
+Complex system,What is the study of complex systems from biology?,adaptation,2
+Complex system,What is the broad term for complex systems?,computer science,2
+Complex system,What is the most complex system in the world?,meteorology,2
