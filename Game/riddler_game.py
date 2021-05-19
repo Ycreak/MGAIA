@@ -4,6 +4,7 @@ from inputbox import InputBox
 import pandas as pd
 import random
 import subprocess
+
 import os
 import math
 
@@ -16,7 +17,7 @@ import _question_handling
 import style
 
 from answer_validation import answerIsValid
-from NLP.question_generator import Question_Generator
+# from NLP.question_generator import Question_Generator
 from mysprite import MySprite
 
 import NLP.topic_finder as tf
@@ -52,13 +53,13 @@ class App:
         self.sprite_group_menu_riddler = pygame.sprite.Group(
             self.sprite_menu_riddler)
 
-        self.logo = pygame.image.load("img/icon.png")
+        self.logo = pygame.image.load("img/riddler/untitled0019.png")
 
         self.show_bubble = True
         self.img_bubble = pygame.image.load("img/bubble.png")
 
         self.topic_options = []
-        self.small_options = []
+        self.unavailable_options = []
 
     def on_init(self):
         pygame.init()
@@ -114,6 +115,9 @@ class App:
         self.given_up = False
         self._running = True
         self.buying_answer = False
+
+        self.chosen_topic = "default"
+        self.question_topic = "default"
 
         # begin the game with one question displayed
         self.add_question()
@@ -243,16 +247,16 @@ class App:
                     button_name = "topic_option_button" + str(i)
                     if self.positions[button_name][0][0] <= self.mouse[0] <= self.positions[button_name][0][1] and\
                             self.positions[button_name][1][0] <= self.mouse[1] <= self.positions[button_name][1][1] and\
-                            self.topic_options[i] not in self.small_options:
-                        chosen_topic = self.topic_options[i]
+                            self.topic_options[i] not in self.unavailable_options:
+                        self.chosen_topic = self.topic_options[i]
 
                         # We now pressed a topic. Find a related topic to ask questions about
-                        print("Topic ", chosen_topic,
+                        print("Topic ", self.chosen_topic,
                               " button pressed.")
 
                         self.status = "topic_chosen"
 
-                        self.subtopics = tf.find_subtopics(chosen_topic)
+                        self.subtopics = tf.find_subtopics(self.chosen_topic)
 
                         print(self.subtopics)
 
@@ -267,11 +271,11 @@ class App:
 
                             # TODO: Now everything is Python3, this can just be an import
                             self.quest_gen = subprocess.Popen(
-                                ['python3', 'q2.py', current_subtopic], cwd="NLP/")
+                                ['python3', 'question_generator.py', current_subtopic], cwd="NLP/")
                         else:
                             print("Topic is too small. You chose poorly!")
                             self.status = "searching_topic"
-                            self.small_options.append(chosen_topic)
+                            self.unavailable_options.append(self.chosen_topic)
                         self.on_render()
 
     ####################################
@@ -306,10 +310,10 @@ class App:
             color_dark = "color_dark"
             name = option
 
-            if option in self.small_options:
+            if option in self.unavailable_options:
                 color_light = "warningbox"
                 color_dark = "warningbox"
-                name = "This topic contains not enough subtopics."
+                name = "Topic unavailable. Please select another."
 
             buttonpos = "topic_option_button" + str(i)
 
@@ -448,13 +452,21 @@ class App:
         if self.menupage:
             # TODO: this needs to be better
             # Check if the questions are generated
-            try:
-                poll = self.quest_gen.poll()
-                if poll is not None:
-                    self.status = 'questions_generated'
-            except:
-                # print('wrong')
-                pass
+            if not self.chosen_topic == self.question_topic:
+                try:
+                    poll = self.quest_gen.poll()
+                    if poll is not None:
+                        if poll == 0:
+                            self.status = 'questions_generated'
+                            print("Questions were generated")
+                        else: 
+                            print("Entire text was read. Not enough questions")
+                            self.unavailable_options.append(self.chosen_topic)
+                            self.status = "searching_topic"
+
+                        self.question_topic = self.chosen_topic
+                except:
+                    pass
 
             self.display_surf.fill(self.colors["bg_color"])
 

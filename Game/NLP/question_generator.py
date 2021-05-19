@@ -10,125 +10,138 @@ Used blog posts:
     https://towardsdatascience.com/questgen-an-open-source-nlp-library-for-question-generation-algorithms-1e18067fcdc6
 
 '''
-class Question_Generator():
-    def __init__(self, link):
-        self.Generate_questions(link)
 
-    def Remove_stopwords(self, string):
-        """Removes stop words from the given string
+# Import the NLP libraries
+from Questgen import main
+from pprint import pprint
 
-        Args:
-            string (string): sentence with words to remove
-        Returns:
-            list: tokens from filtered sentence
-        """    
-        # To remove stopwords and evaluate strings
-        from nltk.corpus import stopwords
-        from nltk.tokenize import word_tokenize 
+qg = main.QGen()
 
-        stop_words = set(stopwords.words('english')) 
+# Library Imports
+import pandas as pd
+import re
+import sys
+import urllib
 
-        word_tokens = word_tokenize(string) 
+# Imports to extract wikipedia pages
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
 
-        filtered_sentence = [w for w in word_tokens if not w in stop_words] 
+def Remove_stopwords(string):
+    """Removes stop words from the given string
 
-        filtered_sentence = [] 
+    Args:
+        string (string): sentence with words to remove
+    Returns:
+        list: tokens from filtered sentence
+    """    
+    # To remove stopwords and evaluate strings
+    from nltk.corpus import stopwords
+    from nltk.tokenize import word_tokenize 
 
-        for w in word_tokens: 
-            if w not in stop_words: 
-                filtered_sentence.append(w.lower()) 
-        
-        # print(word_tokens) 
-        # print(filtered_sentence)
+    stop_words = set(stopwords.words('english')) 
 
-        return filtered_sentence 
+    word_tokens = word_tokenize(string) 
 
-    def Generate_questions(self, link):
-        # Import the NLP libraries
-        from Questgen import main
-        from pprint import pprint
+    filtered_sentence = [w for w in word_tokens if not w in stop_words] 
 
-        # Library Imports
-        import pandas as pd
-        import re
-        import sys
-        import urllib
+    filtered_sentence = [] 
 
-        # Imports to extract wikipedia pages
-        from urllib.request import urlopen
-        from bs4 import BeautifulSoup
+    for w in word_tokens: 
+        if w not in stop_words: 
+            filtered_sentence.append(w.lower()) 
+    
+    # print(word_tokens) 
+    # print(filtered_sentence)
 
-        # Init of pandas dataframe
-        column_names = ["topic", "question", "answer"]
-        df = pd.DataFrame(columns = column_names)
-        
-        source = urlopen(link).read()# Make a soup 
-        soup = BeautifulSoup(source,'lxml')
+    return filtered_sentence 
 
-        # Extract the name of the page
-        topic_name = link.split("/")[-1]
-        topic_name_normal = topic_name.replace("_", " ")
-        title = urllib.parse.unquote(topic_name_normal)
+link = sys.argv[1]
 
-        words = self.Remove_stopwords(title)
+# Init of pandas dataframe
+column_names = ["topic", "question", "answer"]
+df = pd.DataFrame(columns = column_names)
 
-        # Extract the plain text content from paragraphs
-        text = ''
-        for paragraph in soup.find_all('p'):
-            text += paragraph.text
-            
-        # Use regex to clean the text of wikipedia formatting
-        text = re.sub(r'\[.*?\]+', '', text)
-        text = text.replace('\n', '')
+source = urlopen(link).read()# Make a soup 
+soup = BeautifulSoup(source,'lxml')
 
-        # Hack to generate more questions
-        text1 = text.split()[0:500]
-        text2 = text.split()[500:1000]
+# Extract the name of the page
+topic_name = link.split("/")[-1]
+topic_name_normal = topic_name.replace("_", " ")
+title = urllib.parse.unquote(topic_name_normal)
 
-        text1 = ' '.join([str(elem) for elem in text1])
-        text2 = ' '.join([str(elem) for elem in text2])
+words = Remove_stopwords(title)
 
-        payload = { "input_text": text1 }
+# Extract the plain text content from paragraphs
+text = ''
+for paragraph in soup.find_all('p'):
+    text += paragraph.text
+    
+# Use regex to clean the text of wikipedia formatting
+text = re.sub(r'\[.*?\]+', '', text)
+text = text.replace('\n', '')
 
-        # Run the model
-        qg = main.QGen()
-        output = qg.predict_shortq(payload)
-        pprint(output)
+# Hack to generate more questions
+text_splitted = text.split()
 
-        # Save the output        
+previous_split = 100
+while not text_splitted[previous_split][-1] == ".":
+        previous_split = previous_split + 1
+previous_split = previous_split + 1
+split_point = previous_split + 50
+
+while len(df) < 10 and split_point < len(text_splitted):
+    while not text_splitted[split_point-1][-1] == ".":
+        split_point = split_point + 1
+
+    text1 = text_splitted[previous_split:split_point]
+
+    text1 = ' '.join([str(elem) for elem in text1])
+
+    payload = { "input_text": text1 }
+
+    # Run the model
+    qg = main.QGen()
+    output = qg.predict_shortq(payload)
+    pprint(output)
+
+    # Save the output
+
+    if len(output) > 0:    
         for item in output['questions']:
-            # print(item)
-            print(item['Question'], item['Answer'])
-            new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
-            df = df.append(new_line, ignore_index=True)
+            if len(item['Question']) < 100:
+                print(item['Question'], item['Answer'])
+                new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
+                df = df.append(new_line, ignore_index=True)
 
-        payload = { "input_text": text2 }
+    previous_split = split_point
+    split_point = split_point + 50
 
-        output = qg.predict_shortq(payload)
-        pprint(output)
-                
-        for item in output['questions']:
-            # print(item)
-            print(item['Question'], item['Answer'])
-            new_line = {'topic': title, 'question': item['Question'], 'answer': item['Answer']}
-            df = df.append(new_line, ignore_index=True)
+if split_point >= len(text_splitted):
+    sys.exit(1)
 
-        # Now check the dataframe for proper answers
-        df["penalty"] = 0
+# Now check the dataframe for proper answers
+df["penalty"] = 0
 
-        for i in range(len(df)):
-            
-            q = df["question"][i].lower()
+for i in range(len(df)):
+    
+    q = df["question"][i].lower()
+    a = df["answer"][i].lower()
 
-            # q = ''.join(ch for ch in q if not ch.isupper())
-            
-            for word in words:
-                # print(word, q)
-                if word in q:
-                    print(q, 'contains', word)
-                    df["penalty"][i] += 1
+    # q = ''.join(ch for ch in q if not ch.isupper())
+    
+    for word in words:
+        # print(word, q)
+        if word in q:
+            print(q, 'contains', word)
+            df["penalty"][i] += 1
+        if word in a:
+            print(a, 'contains', word)
+            df["penalty"][i] += 1
 
-        df = df.sort_values(by=['penalty'])
-        print(df)
-        df.to_csv('dataframe.csv', index = False, header=True)
+df = df.sort_values(by=['penalty'])
+df = df[:8] # we can only show 8 on screen
+print(df)
+df.to_csv('dataframe.csv', index = False, header=True)
 
+sys.exit(0)
