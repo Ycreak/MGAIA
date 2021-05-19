@@ -109,11 +109,10 @@ class App:
         self.score = 20
         self.topic = ''
         self.status = 'welcome'
-        self.question_status = "default"
+        #self.question_status = "default"
         self.player_won = False
         self.given_up = False
         self._running = True
-
         self.buying_answer = False
 
         # begin the game with one question displayed
@@ -163,7 +162,7 @@ class App:
                     pass
 
                 # only add question in default mode, not when buying answer
-                if self.question_status == "default":
+                if not self.buying_answer:
                     self.add_question()
                     self.on_render()
 
@@ -176,14 +175,14 @@ class App:
                 self.buying_answer = not self.buying_answer
 
                 # update game state
-                if self.question_status == "default":
-                    self.question_status = "buy_answer"
-                else:
-                    self.question_status = "default"
+                # if self.question_status == "default":
+                #     self.question_status = "buy_answer"
+                # else:
+                #     self.question_status = "default"
                 self.on_render()
 
             # answer buying screen
-            if self.question_status == "buy_answer":
+            if self.buying_answer:
                 _question_handling._buy_answer(self)
                 self.on_render()
 
@@ -239,7 +238,7 @@ class App:
                 self.on_render()
 
             # toppic_option_buttons
-            if self.question_status == "default" and self.menupage:
+            if not self.buying_answer and self.menupage:
                 for i in range(0, len(self.topic_options)):
                     button_name = "topic_option_button" + str(i)
                     if self.positions[button_name][0][0] <= self.mouse[0] <= self.positions[button_name][0][1] and\
@@ -425,7 +424,7 @@ class App:
             self.answer_input_box.draw(self.display_surf)
 
             # NO MORE QUESTIONS
-            if self.no_more_questions and self.question_status == "default":
+            if self.no_more_questions and not self.buying_answer:
                 self.no_more_questions_handler()
                 self.sprite_sphinx_wrong.update()
                 self.sprite_sphinx_wrong.draw(self.display_surf)

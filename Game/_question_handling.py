@@ -64,7 +64,7 @@ def _render_questions(state, top_position):
         q = state.questionfont.render(
             question, True, state.colors["questiontext"])
 
-        if state.question_status == "buy_answer":  # if we are in the 'buy answer' mode
+        if state.buying_answer:  # if we are in the 'buy answer' mode
 
             if answer != '':  # this has to be: if question is already bought
                 # +str(penalty), True, state.colors["answertext"])
