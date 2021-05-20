@@ -150,6 +150,11 @@ class App:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
 
+            if self.no_more_questions and self.width/2-400 <= self.mouse[0] <= self.width/2+400 and\
+                    self.height/2-100 <= self.mouse[1] <= self.height/2+100:
+                self.no_more_questions = not self.no_more_questions
+                self.on_render()
+
             # quit button
             if self.positions["quit_button"][0][0] <= self.mouse[0] <= self.positions["quit_button"][0][1] and\
                     self.positions["quit_button"][1][0] <= self.mouse[1] <= self.positions["quit_button"][1][1]:
@@ -459,7 +464,7 @@ class App:
                         if poll == 0:
                             self.status = 'questions_generated'
                             print("Questions were generated")
-                        else: 
+                        else:
                             print("Entire text was read. Not enough questions")
                             self.unavailable_options.append(self.chosen_topic)
                             self.status = "searching_topic"
