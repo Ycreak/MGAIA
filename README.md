@@ -16,11 +16,16 @@ $ python3 -m nltk.downloader universal_tagset
 $ python3 -m spacy download en
 
 Navigate to the NLP folder and download the following dataset (for question generation):
-wget https://github.com/explosion/sense2vec/releases/download/v1.0.0/s2v_reddit_2015_md.tar.gz
-tar -xvf  s2v_reddit_2015_md.tar.gz
+$ cd NLP
+$ wget https://github.com/explosion/sense2vec/releases/download/v1.0.0/s2v_reddit_2015_md.tar.gz
+$ tar -xvf  s2v_reddit_2015_md.tar.gz
 
 Return to the Game folder and run the game
 $ cd ..
 $ python3 riddler_game.py
 
-Be aware that the generation of questions can take a long time (around 3 to 5 minutes). Both the riddler and the terminal will communicate with the player when the questions are ready.
+Be aware that the generation of questions can take a long time (around 3 to 5 minutes). Both the riddler and the terminal will communicate with the player when the questions are ready. The game hangs when finding sub topics, as this process has not yet been parallelised. 
+
+Lastly, at first startup, quite some time is used between the loading of NLTK and the generation of questions. 
+
+The game was tested on Linux (Ubuntu 20.10) and MacOS (Big Sur).

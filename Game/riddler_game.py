@@ -107,7 +107,7 @@ class App:
         self.questions_answers_displayed = []
 
         # gamestate
-        self.score = 8
+        self.score = 9
         self.topic = ''
         self.status = 'welcome'
         #self.question_status = "default"
@@ -135,7 +135,7 @@ class App:
         self.answers_displayed_questions = []
         self.questions_answers_displayed = []
         self.game_answer = self.questions_answers_database['topic'].iloc[0]
-        self.score = 20
+        self.score = 9
         self.given_up = False
         self.player_won = False
         self.no_more_questions = False
