@@ -22,3 +22,5 @@ tar -xvf  s2v_reddit_2015_md.tar.gz
 Return to the Game folder and run the game
 $ cd ..
 $ python3 riddler_game.py
+
+Be aware that the generation of questions can take a long time (around 3 to 5 minutes). Both the riddler and the terminal will communicate with the player when the questions are ready.

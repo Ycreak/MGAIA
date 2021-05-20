@@ -107,7 +107,7 @@ class App:
         self.questions_answers_displayed = []
 
         # gamestate
-        self.score = 20
+        self.score = 8
         self.topic = ''
         self.status = 'welcome'
         #self.question_status = "default"

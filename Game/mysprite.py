@@ -5,6 +5,8 @@ import math
 
 
 class MySprite(pygame.sprite.Sprite):
+    """ Simple class to handle sprites on screen
+    """
     def __init__(self, image, x, y, w, h):
         super(MySprite, self).__init__()
         # adding all the images to sprite array
@@ -45,6 +47,9 @@ class MySprite(pygame.sprite.Sprite):
         return images
 
     def update(self):
+        """ An index is kept track of and used to change the speed of the
+        animation. The increment can be changed to speed up or slow down.
+        """
         # when the update method is called, we will increment the index
         self.index += 0.02
 
