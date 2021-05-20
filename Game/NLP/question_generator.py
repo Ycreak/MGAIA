@@ -127,9 +127,7 @@ for i in range(len(df)):
     
     q = df["question"][i].lower()
     a = df["answer"][i].lower()
-
-    # q = ''.join(ch for ch in q if not ch.isupper())
-    
+   
     for word in words:
         # print(word, q)
         if word in q:
